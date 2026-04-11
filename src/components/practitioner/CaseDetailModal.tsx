@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import { API_BASE_URL } from "../../config/api";
+import { apiUrl } from "../../config/api";
 
 interface CaseDetailModalProps {
   isOpen: boolean;
@@ -59,7 +59,7 @@ export function CaseDetailModal({
   useEffect(() => {
     if (!isOpen) return;
     setLoadingHistory(true);
-    axios.get(`${API_BASE_URL}/api/history/${userId}`)
+    axios.get(apiUrl(`/api/history/${userId}`))
       .then(res => setHistory(res.data.history || []))
       .catch(() => {})
       .finally(() => setLoadingHistory(false));
@@ -70,7 +70,7 @@ export function CaseDetailModal({
     setAssigning(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE_URL}/api/practitioner/assign`, {
+      await axios.post(apiUrl("/api/practitioner/assign"), {
         patientId: userId,
         assignedTo
       }, { headers: { Authorization: `Bearer ${token}` } });
@@ -85,7 +85,7 @@ export function CaseDetailModal({
   const handleResolve = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE_URL}/api/practitioner/resolve`, {
+      await axios.post(apiUrl("/api/practitioner/resolve"), {
         patientId: userId
       }, { headers: { Authorization: `Bearer ${token}` } });
       onClose(); // Automatically close it or manually refresh the queue in the parent component

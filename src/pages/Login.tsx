@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { API_BASE_URL } from "../config/api";
+import { apiUrl } from "../config/api";
 import { loginStart, loginSuccess } from "../redux/slices/auth-slice/authSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";
 
@@ -23,7 +23,7 @@ export function Login() {
     setError("");
     dispatch(loginStart());
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+      const res = await axios.post(apiUrl("/api/auth/login"), {
         email: formData.email,
         password: formData.password,
       });

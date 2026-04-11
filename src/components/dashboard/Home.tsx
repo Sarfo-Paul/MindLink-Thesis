@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { type RootState } from "../../redux/store";
 import axios from "axios";
-import { API_BASE_URL } from "../../config/api";
+import { apiUrl } from "../../config/api";
 
 import { MoodCheckIn } from "./MoodCheckIn";
 import { MoodTrendChart } from "./MoodTrendChart";
@@ -21,7 +21,7 @@ export function Home() {
       try {
         const id = user?.userId;
         if (!id) { setWeeklySummary("Ready for a new baseline."); return; }
-        const res = await axios.get(`${API_BASE_URL}/api/history/${id}`);
+        const res = await axios.get(apiUrl(`/api/history/${id}`));
         const count = res.data.history?.length || 0;
         if (count === 0) setWeeklySummary("No check-ins yet — start your baseline today.");
         else if (count === 1) setWeeklySummary("1 check-in recorded. Keep going to build your baseline.");

@@ -19,13 +19,38 @@ function resolveApiBase(): string {
 }
 
 /**
- * Express routes are mounted at `/api/...` (no `/api/v1` on the server).
- * If VITE_API_BASE_URL was copied from VITE_SERVER_API_URL (`.../api/v1`),
- * `${base}/api/auth/register` would become `.../api/v1/api/auth/register` → 404.
+ * Express serves `/api/...` only. Env often wrongly copies `.../api/v1` from another template.
  */
-function originOnlyApiBase(url: string): string {
-  return url.replace(/\/$/, "").replace(/\/api\/v\d+$/i, "");
+function normalizeApiOrigin(input: string): string {
+  const trimmed = input.trim().replace(/\/$/, "");
+  try {
+    const u = new URL(trimmed);
+    const path = (u.pathname || "/").replace(/\/$/, "") || "/";
+    if (path === "/" || path === "") {
+      return u.origin;
+    }
+    if (/^\/api\/v\d+$/i.test(path)) {
+      return u.origin;
+    }
+  } catch {
+    /* relative or missing protocol — fall through */
+  }
+  return trimmed.replace(/\/api\/v\d+$/i, "");
 }
 
-/** MindLink Express API origin (no trailing slash). */
-export const API_BASE_URL = originOnlyApiBase(resolveApiBase());
+/** Collapse .../api/vN/api/... → .../api/... (bad base + `/api/...` paths). */
+function collapseDuplicateApiSegment(url: string): string {
+  return url.replace(/\/api\/v\d+\/api\//gi, "/api/");
+}
+
+/** API origin only, no trailing slash. Prefer {@link apiUrl} for HTTP calls. */
+export const API_BASE_URL = normalizeApiOrigin(resolveApiBase()).replace(/\/$/, "");
+
+/**
+ * Absolute URL for MindLink Express paths (e.g. `/api/auth/register`).
+ * Survives `VITE_API_BASE_URL` mistakenly set to `https://host/api/v1`.
+ */
+export function apiUrl(path: string): string {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return collapseDuplicateApiSegment(`${API_BASE_URL}${p}`);
+}

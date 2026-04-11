@@ -2,7 +2,7 @@ import { useNotification } from "../shared/NotificationProvider";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../redux/store";
 import axios from "axios";
-import { API_BASE_URL } from "../../config/api";
+import { apiUrl } from "../../config/api";
 import { useState } from "react";
 
 export function SupportRequest() {
@@ -15,7 +15,7 @@ export function SupportRequest() {
     setLoading(true);
     try {
       if (user?.userId) {
-        await axios.post(`${API_BASE_URL}/api/support`, {
+        await axios.post(apiUrl("/api/support"), {
           requestType: "Priority Support"
         }, {
           headers: { Authorization: `Bearer ${token}` }

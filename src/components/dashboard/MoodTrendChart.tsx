@@ -3,7 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { type RootState } from '../../redux/store';
-import { API_BASE_URL } from '../../config/api';
+import { apiUrl } from '../../config/api';
 
 export function MoodTrendChart() {
   const { user } = useSelector((state: RootState) => state.auth!);
@@ -14,7 +14,7 @@ export function MoodTrendChart() {
       try {
         const id = user?.userId;
         if (!id) throw new Error("no user");
-        const res = await axios.get(`${API_BASE_URL}/api/history/${id}`);
+        const res = await axios.get(apiUrl(`/api/history/${id}`));
         const history = res.data.history || [];
         const formatted = history.reverse().map((h: any) => ({
           day: new Date(h.createdAt).toLocaleDateString('en-US', { weekday: 'short' }),

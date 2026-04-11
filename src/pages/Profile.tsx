@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../redux/store";
 import { useNotification } from "../components/shared/NotificationProvider";
 import axios from "axios";
-import { API_BASE_URL } from "../config/api";
+import { apiUrl } from "../config/api";
 import { loginSuccess } from "../redux/slices/auth-slice/authSlice";
 
 export function Profile() {
@@ -30,7 +30,7 @@ export function Profile() {
     }
     setLoading(true);
     try {
-      const res = await axios.put(`${API_BASE_URL}/api/user/profile`, {
+      const res = await axios.put(apiUrl("/api/user/profile"), {
         username: formData.username,
         phone: formData.phone,
         preferredLanguage: formData.preferredLanguage,
