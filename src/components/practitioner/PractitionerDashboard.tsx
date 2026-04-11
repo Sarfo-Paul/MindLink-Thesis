@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { API_BASE_URL } from "../../config/api";
+import { apiUrl } from "../../config/api";
 import { CaseDetailModal } from "./CaseDetailModal";
 
 export function PractitionerDashboard() {
@@ -13,7 +13,7 @@ export function PractitionerDashboard() {
     async function loadQueue() {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${API_BASE_URL}/api/practitioner/queue`, {
+        const res = await axios.get(apiUrl("/api/practitioner/queue"), {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = res.data.queue || [];

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "../config/api";
+import { apiUrl } from "../config/api";
 import { ProfessionalCard } from "../components/support/ProfessionalCard";
 import { SchedulingModal } from "../components/support/SchedulingModal";
 import { useNotification } from "../components/shared/NotificationProvider";
@@ -102,7 +102,7 @@ export function Psychologists() {
 
   useEffect(() => {
     axios
-      .get(`${API_BASE_URL}/api/professionals`)
+      .get(apiUrl("/api/professionals"))
       .then((res) => {
         const fetched: Professional[] = (res.data.professionals || []).map(
           (p: any) => ({

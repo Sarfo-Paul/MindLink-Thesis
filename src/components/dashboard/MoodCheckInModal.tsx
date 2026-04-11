@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../redux/store";
-import { API_BASE_URL } from "../../config/api";
+import { apiUrl } from "../../config/api";
 import type { MoodType } from "../../types";
 import { RiskAlertModal } from "./RiskAlertModal";
 
@@ -59,7 +59,7 @@ export function MoodCheckInModal({
       setCurrentStepIndex(currentStepIndex + 1);
       try {
         const response = await axios.post(
-          `${API_BASE_URL}/api/checkins`,
+          apiUrl("/api/checkins"),
           {
             userId: user?.userId,
             ...updatedData,

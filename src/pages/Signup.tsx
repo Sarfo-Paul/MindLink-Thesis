@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { API_BASE_URL } from "../config/api";
+import { apiUrl } from "../config/api";
 import { loginSuccess } from "../redux/slices/auth-slice/authSlice";
 import { useAppDispatch } from "../redux/store";
 
@@ -32,7 +32,7 @@ export function Signup() {
     }
     setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/auth/register`, {
+      const res = await axios.post(apiUrl("/api/auth/register"), {
         username: formData.username,
         email: formData.email,
         password: formData.password,
