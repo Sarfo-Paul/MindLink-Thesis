@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { type RootState } from "../../redux/store";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 
 const statusConfig = {
   GREEN: {
@@ -80,7 +81,7 @@ export function WellbeingStatus() {
     async function load() {
       if (!user?.userId) { setLoading(false); return; }
       try {
-        const res = await axios.get(`http://localhost:4000/api/history/${user.userId}`);
+        const res = await axios.get(`${API_BASE_URL}/api/history/${user.userId}`);
         const history = res.data.history || [];
         if (history.length > 0) {
           const latest = history[0];

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 import { CaseDetailModal } from "./CaseDetailModal";
 
 export function PractitionerDashboard() {
@@ -11,7 +12,10 @@ export function PractitionerDashboard() {
   useEffect(() => {
     async function loadQueue() {
       try {
-        const res = await axios.get("http://localhost:4000/api/practitioner/queue");
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${API_BASE_URL}/api/practitioner/queue`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const data = res.data.queue || [];
         setQueue(data.length > 0 ? data : [
           { userId: 'demo-red-001',  latestRisk: 'RED',    dailyScore: 28, openRequests: 1, checkinCount: 4, explanation: 'Low mood, disrupted sleep and high stress over multiple sessions.', hasEmergencyContact: true, emergencyContact: '+233 50 123 4567' },
