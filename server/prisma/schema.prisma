@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  PRACTITIONER
+  VOLUNTEER
+}
+
+model User {
+  id                      String            @id @default(uuid())
+  phone                   String?           @unique
+  email                   String?           @unique
+  username                String?
+  passwordHash            String?
+  role                    Role              @default(USER)
+  preferredLanguage       String            @default("en")
+  emergencyContactEnabled Boolean           @default(false)
+  emergencyContactNumber  String?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+  
+  checkins                Checkin[]
+  gameSessions            GameSession[]
+  chatbotLogs             ChatbotLog[]
+  riskScores              RiskScore[]
+  supportRequests         SupportRequest[]
+}
+
+model Checkin {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  mood        Int      // 1-5 or 0-100 scale
+  sleep       Int      // 1-5 or 0-100 scale
+  stress      Int      // 1-5 or 0-100 scale
+  energy      Int      // 1-5 or 0-100 scale
+  social      Int      // 1-5 or boolean equivalent
+  source      String   // "USSD" or "WEB"
+  createdAt   DateTime @default(now())
+}
+
+model GameSession {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  gameType    String
+  score       Int
+  accuracy    Float
+  duration    Int      // in seconds
+  mistakes    Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model ChatbotLog {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  message         String
+  sentimentScore  Float?
+  flaggedKeywords String?  // Comma separated list
+  createdAt       DateTime @default(now())
+}
+
+model RiskScore {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  dailyScore      Float
+  riskLevel       String   // "GREEN", "YELLOW", "RED"
+  confidenceLevel String   // "HIGH", "MEDIUM", "LOW"
+  explanation     String?
+  createdAt       DateTime @default(now())
+}
+
+model SupportRequest {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  requestType String
+  assignedTo  String?
+  status      String   @default("OPEN") // "OPEN", "IN_PROGRESS", "RESOLVED"
+  createdAt   DateTime @default(now())
+}
