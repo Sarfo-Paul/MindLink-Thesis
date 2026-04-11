@@ -12,7 +12,12 @@ const app = express();
 const port = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'mindlink-dev-secret-change-in-production';
 
-app.use(cors());
+const corsOrigins = process.env.CORS_ORIGIN?.trim();
+const corsOptions: cors.CorsOptions =
+  corsOrigins && corsOrigins !== '*'
+    ? { origin: corsOrigins.split(',').map((o) => o.trim()).filter(Boolean) }
+    : { origin: true };
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/health', (req, res) => {
