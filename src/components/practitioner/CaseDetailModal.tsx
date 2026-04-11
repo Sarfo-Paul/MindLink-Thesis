@@ -118,7 +118,8 @@ export function CaseDetailModal({
           <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold">Case Review</p>
-              <h2 className="text-lg font-bold text-gray-900 font-mono">{userId.slice(0, 20)}…</h2>
+              <h2 className="text-lg font-bold text-gray-900">{username}</h2>
+              <p className="text-xs text-gray-400 font-mono mt-0.5">ID {userId.slice(0, 8)}…</p>
             </div>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,6 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useNotification } from "../components/shared/NotificationProvider";
 import axios from "axios";
 import { loginStart, loginSuccess } from "../redux/slices/auth-slice/authSlice";
 import { useAppDispatch, useAppSelector } from "../redux/store";

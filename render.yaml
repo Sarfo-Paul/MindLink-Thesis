@@ -1,0 +1,13 @@
+# Render Blueprint — Web Service (Node). Root = server/, compiles TS to dist/ on build.
+# Env: DATABASE_URL, DIRECT_URL, JWT_SECRET, CORS_ORIGIN, NODE_ENV=production
+
+services:
+  - type: web
+    name: mindlink-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDirectory: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
