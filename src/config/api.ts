@@ -18,5 +18,14 @@ function resolveApiBase(): string {
   return raw;
 }
 
-/** MindLink Express API (no trailing slash). */
-export const API_BASE_URL = resolveApiBase().replace(/\/$/, "");
+/**
+ * Express routes are mounted at `/api/...` (no `/api/v1` on the server).
+ * If VITE_API_BASE_URL was copied from VITE_SERVER_API_URL (`.../api/v1`),
+ * `${base}/api/auth/register` would become `.../api/v1/api/auth/register` → 404.
+ */
+function originOnlyApiBase(url: string): string {
+  return url.replace(/\/$/, "").replace(/\/api\/v\d+$/i, "");
+}
+
+/** MindLink Express API origin (no trailing slash). */
+export const API_BASE_URL = originOnlyApiBase(resolveApiBase());
