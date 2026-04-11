@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { type RootState } from "../../redux/store";
+import { API_BASE_URL } from "../../config/api";
 
 export function ChatbotWidget() {
   const { user } = useSelector((state: RootState) => state.auth!);
@@ -19,7 +20,7 @@ export function ChatbotWidget() {
     setQuery("");
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:4000/api/chat", {
+      const res = await axios.post(`${API_BASE_URL}/api/chat`, {
         userId: user?.userId,
         message: userEntry
       });

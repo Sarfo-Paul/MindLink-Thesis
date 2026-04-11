@@ -4,6 +4,7 @@ import { MoodCheckInModal } from "../components/dashboard/MoodCheckInModal";
 import { useSelector } from "react-redux";
 import { type RootState } from "../redux/store";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 // SVG mood icons — no emojis
 const MoodIcon = ({ mood, className = "w-6 h-6" }: { mood: string; className?: string }) => {
@@ -99,7 +100,7 @@ export function Journal() {
     if (!user?.userId) { setLoading(false); return; }
     setLoading(true);
     try {
-      const res = await axios.get(`http://localhost:4000/api/history/${user.userId}`);
+      const res = await axios.get(`${API_BASE_URL}/api/history/${user.userId}`);
       const raw = res.data.history || [];
       const mapped: JournalEntry[] = raw.map((h: any) => ({
         id: h.id,

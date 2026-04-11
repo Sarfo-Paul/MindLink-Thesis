@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { type RootState } from "../../redux/store";
+import { API_BASE_URL } from "../../config/api";
 
 const emojis = ["🌿", "🌙", "🌊", "⛰️", "🌸", "🍂"];
 const generateCards = () => {
@@ -58,7 +59,7 @@ export function MemoryMatchGame({ onClose }: { onClose: () => void }) {
       setIsWon(true);
       const timeTaken = Math.round((Date.now() - startTime) / 1000);
       axios
-        .post("http://localhost:4000/api/games", {
+        .post(`${API_BASE_URL}/api/games`, {
           userId: user?.userId,
           gameType: "Memory Match",
           score: Math.max(0, Math.round(100 - mistakes * 5 - timeTaken / 2)),

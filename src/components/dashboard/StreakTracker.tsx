@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { type RootState } from "../../redux/store";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 
 interface StreakItem {
   label: string;
@@ -49,8 +50,8 @@ export function StreakTracker() {
       if (!user?.userId) { setLoading(false); return; }
       try {
         const [histRes, gameRes] = await Promise.allSettled([
-          axios.get(`http://localhost:4000/api/history/${user.userId}`),
-          axios.get(`http://localhost:4000/api/games/${user.userId}`),
+          axios.get(`${API_BASE_URL}/api/history/${user.userId}`),
+          axios.get(`${API_BASE_URL}/api/games/${user.userId}`),
         ]);
         const checkinDates = histRes.status === "fulfilled"
           ? (histRes.value.data.history || []).map((h: any) => h.createdAt as string)
