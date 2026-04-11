@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import axios from "axios";
 import { loginSuccess } from "../redux/slices/auth-slice/authSlice";
 import { useAppDispatch } from "../redux/store";

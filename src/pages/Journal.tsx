@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Card } from "../components/shared/Card";
 import { MoodCheckInModal } from "../components/dashboard/MoodCheckInModal";
-import type { MoodType } from "../types";
 import { useSelector } from "react-redux";
 import { type RootState } from "../redux/store";
 import axios from "axios";

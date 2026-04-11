@@ -23,6 +23,10 @@ export function Profile() {
   };
 
   const handleSave = async () => {
+    if (!token) {
+      error("Update Failed", "Please sign in again.");
+      return;
+    }
     setLoading(true);
     try {
       const res = await axios.put("http://localhost:4000/api/user/profile", {
