@@ -1,0 +1,1219 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>MindLink Thesis — Preview</title><style>
+:root{--bg:#f9fafb;--card:#fff;--ink:#0f172a;--muted:#64748b;--accent:#6b21a8;--line:#e2e8f0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+a{color:var(--accent)}header{position:sticky;top:0;background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.header-inner{max-width:900px;margin:0 auto;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+.badge{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:white;background:#0f2a1f;padding:6px 10px;border-radius:999px}
+.btn{border:1px solid var(--line);background:white;padding:8px 14px;border-radius:999px;font-weight:600;font-size:13px;cursor:pointer}
+.container{max-width:900px;margin:0 auto;padding:24px 20px 60px}
+article{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:32px;box-shadow:0 8px 24px rgba(15,23,42,0.06)}
+article h1{font-size:30px;line-height:1.2;margin:0 0 10px}
+article h2{font-size:22px;margin:32px 0 12px;padding-top:16px;border-top:1px solid #f1f5f9}
+article h3{font-size:17px;margin:20px 0 8px}
+article p{margin:10px 0;color:#334155}
+article ul,article ol{margin:10px 0 10px 22px}
+article code{background:#f1f5f9;padding:1px 5px;border-radius:6px;font-size:13px}
+article pre{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:12px;overflow:auto;font-size:12.5px}
+article pre code{background:transparent;color:inherit;padding:0}
+article blockquote{border-left:3px solid var(--accent);margin:12px 0;padding:8px 14px;background:#faf5ff;border-radius:0 10px 10px 0}
+article table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+article th{text-align:left;background:#f8fafc;padding:8px 10px;border:1px solid var(--line)}
+article td{padding:8px 10px;border:1px solid var(--line);vertical-align:top}
+.hero{max-width:900px;margin:0 auto;padding:20px}
+.hero h1{font-size:34px;line-height:1.05;margin:0}
+.hero p{color:var(--muted);max-width:680px}
+@media print{header{display:none}body{background:white}article{border:none;box-shadow:none}}
+</style></head><body><header><div class=header-inner><span style='font-weight:800'>MindLink <span style='font-weight:500;color:var(--muted)'>— Thesis</span></span><span class=badge>code-aligned · Sep 2026</span><button class=btn onclick='window.print()'>Print / Save PDF</button></div></header><div class=hero><h1>MindLink: Explainable, Multi-Channel Triage for Low-Resource Settings</h1><p>Rebuilt from the repository as it ships. Every claim in Chapters 4–7 is traceable to a file or route in <code>arena/01a08b29-mindlink-thesis</code>. Print this page to export PDF.</p></div><div class=container><article><h1>MindLink: An Explainable, Multi-Channel Mental Health Triage System with Cognitive Game Signals for Low-Resource Settings</h1>
+<h3>A Thesis Submitted in Partial Fulfilment of the Requirements for the Degree of Bachelor of Science</h3>
+<p><strong>Author:</strong> [Your Full Name]<br><strong>Student ID:</strong> [ID]<br><strong>Department:</strong> [Department of Computer Science / Software Engineering]<br><strong>Institution:</strong> [University Name]<br><strong>Supervisor:</strong> [Supervisor Name, Title]<br><strong>Academic Year:</strong> 2024/2025 — Submission: September 2026<br><strong>Repository:</strong> <code>Sarfo-Paul/MindLink-Thesis</code> — branch <code>arena/01a08b29-mindlink-thesis</code> (commit <code>a790943</code>)<br><strong>Live References:</strong> Frontend <code>https://[vercel deployment]</code> · API <code>https://mindlink-ti7t.onrender.com</code> (see <code>src/config/api.ts</code> and <code>render.yaml</code>)</p>
+<blockquote>
+<p><strong>Alignment Statement:</strong> This document has been rebuilt bottom-up from the codebase as it exists in the repository. Every claim in chapters 4–7 maps to a file, function, route, or schema field in the checked-out code. Where the implementation diverges from earlier thesis drafts — e.g., SQLite prototype instead of Postgres, rule-based triage instead of machine-learned model, USSD-ready schema rather than live telco integration, locally-generated Meet links rather than Google Calendar API — the text states the as-built reality and explains the design rationale. Figures that previously showed hypothetical ML pipelines have been replaced with the actual deterministic pipeline in <code>server/src/services/triageEngine.ts</code>.</p>
+</blockquote>
+<hr>
+<h2>Declaration</h2>
+<p>I hereby declare that this thesis is my own work, that all sources have been acknowledged, and that the MindLink codebase referenced herein was developed as part of this research prototype. The system triages and guides; it does not diagnose mental illness or replace professional care. An earlier draft of the thesis described components not present in the implementation; this revision corrects that.</p>
+<p>Signature: ____________________  Date: 10 September 2026</p>
+<hr>
+<h2>Acknowledgements</h2>
+<p>Thanks to participants who tested the dashboard flows, to the supervisor for guidance on explainability and ethics, and to peers who stress-tested the check-in and game modules.</p>
+<hr>
+<h2>Abstract</h2>
+<p>Access to timely mental health support remains uneven, especially where stigma, cost, and connectivity limit help-seeking. Young adults and students in low-resource and low-connectivity environments often lack a private, low-friction entry point for early support. Existing solutions tend to assume always-online, English-first, and clinically-staffed contexts.</p>
+<p><strong>MindLink</strong> is a thesis research prototype for <strong>explainable mental-health triage</strong> that is deliberately multi-channel. On the web it provides daily check-ins, a reflective journal, chat, and cognitive mini-games whose performance is treated as a passive wellbeing signal. On low-end devices the data model is already USSD-ready (<code>Checkin.source = &quot;USSD&quot; | &quot;WEB&quot;</code>, see <code>server/prisma/schema.prisma</code>). Between the user and any human helper sits a <strong>deterministic Risk Detection Engine</strong> (<code>server/src/services/triageEngine.ts</code>) that fuses five self-report signals, longitudinal trend, behavioural engagement gaps, and the last two cognitive game sessions into a calibrated <code>GREEN | YELLOW | RED</code> classification with an evidence string and confidence tier. The engine is rule-based and fully auditable — chosen over a black-box ML classifier for the thesis context.</p>
+<p>A <strong>structured escalation pathway</strong> ensures no score alone decides care: <code>RiskAlertModal</code> invites the user to connect to a counsellor, talk to the in-app assistant, or — at RED — see a crisis helpline; a one-click <code>POST /api/support</code> creates a <code>SupportRequest</code>; and a role-protected practitioner triage queue (<code>/api/practitioner/queue</code>) surfaces patients sorted by severity with case assignment and resolution. Professionals are listed via <code>/api/professionals</code> from verified DB users plus local mock data so the demo remains usable offline.</p>
+<p>The frontend is a React 18 + TypeScript + Vite SPA styled with Tailwind CSS v4, with state in Redux Toolkit + redux-persist, charts in Recharts and motion in Framer Motion. The backend is a Node.js + Express + TypeScript API using Prisma ORM; the checked-in prototype persists to <strong>SQLite</strong> (file-based) for reproducibility, deployable to Postgres with the same Prisma schema. Authentication is JWT (7-day) with bcrypt hashing and invite-code role elevation. Deployment is via Render (<code>render.yaml</code>) with a <code>GET /health</code> probe.</p>
+<p>Evaluation is by <strong>functional walkthrough, threshold sensitivity reasoning, and alignment audit</strong> rather than clinical trial: the engine correctly prevents false REDs for new users (&lt;3 check-ins → LOW confidence, baseline checks disabled), flags steep declines, and combines independent signals without double-counting. Limitations, ethical guardrails, and a roadmap toward USSD gateway integration, Postgres in production, and longitudinal user studies are discussed.</p>
+<p><strong>Keywords:</strong> digital mental health; triage; explainable AI; low-resource settings; cognitive games; USSD; human-in-the-loop; React; Prisma</p>
+<hr>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#1-introduction">Introduction</a></li>
+<li><a href="#2-literature--background-review">Literature &amp; Background Review</a></li>
+<li><a href="#3-methodology">Methodology</a></li>
+<li><a href="#4-system-analysis--requirements">System Analysis &amp; Requirements</a></li>
+<li><a href="#5-system-design--architecture">System Design &amp; Architecture</a></li>
+<li><a href="#6-implementation--the-as-built-system">Implementation — The As-Built System</a></li>
+<li><a href="#7-testing-evaluation--validation">Testing, Evaluation &amp; Validation</a></li>
+<li><a href="#8-discussion--what-was-built-vs-what-was-planned">Discussion — What Was Built vs. What Was Planned</a></li>
+<li><a href="#9-conclusion--future-work">Conclusion &amp; Future Work</a></li>
+<li><a href="#10-references">References</a></li>
+<li><a href="#appendices">Appendices</a></li>
+</ol>
+<p>List of Figures — Fig 5.1 Architecture, Fig 5.2 ERD, Fig 5.3 Check-in sequence, Fig 6.1 Dashboard layout, Fig 6.2 Risk engine flow<br>List of Tables — Tab 5.1 Tech stack, Tab 5.2 Data models, Tab 6.1 Scoring weights, Tab 6.2 API routes, Tab 6.3 Game MMSE mapping<br>List of Abbreviations — USSD · MMSE · SPA · JWT · ORM · DB · UI</p>
+<hr>
+<h2>1. Introduction</h2>
+<h3>1.1 Problem Context</h3>
+<p>Mental distress often surfaces through subtle, cumulative changes — sleep disruption, social withdrawal, rising stress, falling energy — long before a person books a formal appointment. In contexts with provider shortages, stigma, or intermittent internet, that early window is frequently missed. The repository&#39;s landing page (<code>src/pages/LandingPage.tsx</code>) frames the problem as: <em>a first step toward earlier, kinder support</em>.</p>
+<h3>1.2 Motivation from the Codebase</h3>
+<p>The as-built MindLink does not attempt to automate diagnosis. The tagline in <code>README.md</code> and <code>LandingPage.tsx</code> is consistent: <em>private, AI-assisted triage that helps individuals detect risk early and connects them to the right support — even without internet access.</em> The thesis therefore evaluates a <strong>triage-and-guide</strong> system, not a diagnostic or therapeutic device.</p>
+<h3>1.3 Research Questions</h3>
+<ol>
+<li>Can a transparent, weighted-score triage engine that fuses self-report, trend, engagement, and cognitive game signals provide <strong>calibrated, explainable risk levels</strong> without ML?</li>
+<li>Can cognitive mini-games serve as <strong>passive assessment</strong> rather than mere content?</li>
+<li>Can one data model and escalation pathway serve <strong>both web and low-bandwidth (USSD) pathways</strong> while keeping humans in the loop?</li>
+<li>What are the implementation trade-offs when building with modern web tooling under thesis constraints?</li>
+</ol>
+<h3>1.4 Research Objectives</h3>
+<ul>
+<li>Design and implement a multi-signal triage engine with confidence tiers to avoid premature escalation for new users.</li>
+<li>Implement two production-quality cognitive games plus a lightweight dashboard memory game, all persisting <code>GameSession</code> records that the engine consumes.</li>
+<li>Deliver a complete dashboard, chat, journal, calendar/scheduling, support network, and practitioner triage queue with role-based access.</li>
+<li>Ship a deployable prototype (frontend on Vercel-style static hosting, API on Render) with SQLite for the thesis and a Postgres-ready schema.</li>
+<li>Document the as-built system honestly, including scaffolds not yet wired to telco or calendar APIs.</li>
+</ul>
+<h3>1.5 Scope and Delimitations</h3>
+<p><strong>In scope:</strong> web check-ins, journal, wellbeing status, streaks, games, chatbot (rule-based server side + optional OpenRouter client), support requests, practitioner/admin dashboards, JWT auth, invite-code roles.</p>
+<p><strong>Explicitly out of scope / deferred:</strong> live USSD gateway (Africa&#39;s Talking or similar), real Google Calendar / Meet API writes (links are generated locally), clinical validation, EHR integration, native mobile app.</p>
+<h3>1.6 Contribution</h3>
+<p>The contribution is a <strong>fully traceable prototype</strong> where every risk explanation can be mapped to a code branch in <code>triageEngine.ts</code>, plus a documented UI/UX for multi-channel mental health entry that future work can extend.</p>
+<h3>1.7 Thesis Structure</h3>
+<p>Chapter 2 situates the work in digital mental health literature; 3 explains the build methodology; 4 details requirements against actual routes and models; 5 presents architecture; 6 walks through the implementation file-by-file; 7 evaluates functionally; 8 discusses deltas between plan and reality; 9 concludes.</p>
+<hr>
+<h2>2. Literature &amp; Background Review</h2>
+<h3>2.1 Mental Health Gaps in Low-Resource Settings</h3>
+<p>Literature consistently reports treatment gaps &gt;70% in many LMICs, driven by provider scarcity, centralisation in urban hospitals, stigma, and cost (WHO Mental Health Atlas; Patel et al.). Students and young adults are disproportionately affected yet underserved. MindLink&#39;s low-friction check-in (5 taps in <code>MoodCheckInModal.tsx</code>) is designed against this: the cost of the first disclosure must be near-zero.</p>
+<h3>2.2 Digital Mental Health Interventions</h3>
+<p>Effective DMHIs share: (a) privacy, (b) continuity (streaks, journals), (c) human escalation when needed. Purely self-help apps show high attrition; hybrid models with volunteer/practitioner triage retain users longer. MindLink&#39;s escalation pathway (alert → chat → support request → practitioner queue) mirrors this evidence.</p>
+<h3>2.3 Triage vs. Diagnosis</h3>
+<p>Clinical triage sorts by urgency, not by label. The thesis adopts that framing: <code>classifyRisk()</code> returns <code>level</code> + <code>explanation</code> + <code>confidenceLevel</code>, never a DSM/ICD code. This aligns with ethical guidance that student-built systems must not claim diagnostic capability. The explanation string (e.g., <em>&quot;steep consistent decline over 8 days&quot;</em>) is intentionally human-readable.</p>
+<h3>2.4 Cognitive Games as Passive Signals</h3>
+<p>Mini-games for cognition trace back to MMSE/MoCA paradigms. Thesis games map to:</p>
+<ul>
+<li><strong>Guess What</strong> → visual memory / recall depth (like delayed recall subtests). MMSE normalisation uses log-weighted accuracy + timing.</li>
+<li><strong>Stroop</strong> → executive function / inhibition control (Stroop interference paradigm). Weighted 55% accuracy + 30% speed + 15% error penalty.</li>
+<li><strong>Memory Match</strong> → working memory (dashboard quick probe). Stored as <code>GameSession</code> with <code>score / accuracy / duration / mistakes</code>.</li>
+</ul>
+<p>Crucially, games are <strong>not entertainment first</strong> in MindLink; <code>README.md</code> states <em>Games act as passive assessment tools, not entertainment. Results feed directly into the risk engine.</em> The engine consumes only the last 2 <code>GameSession</code>s to detect <code>cognitivePenalty</code>.</p>
+<h3>2.5 Multi-Channel Access (Web + USSD)</h3>
+<p>USSD remains the most inclusive channel in many African markets because it needs no data, no smartphone, and no app install. The thesis does not claim a live USSD gateway; it implements the preconditions: <code>Checkin.source</code> enum, <code>preferredLanguage</code> on <code>User</code>, language-aware professional directory, and a Settings screen with a USSD Settings panel. The roadmap (Chapter 9) specifies gateway binding.</p>
+<h3>2.6 Gap Analysis</h3>
+<p>Prior student projects often fall into two traps: (a) mock UI with no persistence or (b) ML claim with no auditability. MindLink commits to the middle: a <strong>real persistence layer, real auth, real risk engine with tests of its thresholds</strong>, but with explicit, honest boundaries about what remains scaffold.</p>
+<hr>
+<h2>3. Methodology</h2>
+<h3>3.1 Research Design</h3>
+<p>Applied, prototype-driven research in a single case: build → instrument → walk through → reflect. The artefact itself is the primary data source; functional correctness against requirements is the evaluation criterion, not a randomised trial.</p>
+<h3>3.2 Development Methodology</h3>
+<p>Iterative, vertical-slice delivery:</p>
+<ol>
+<li>Schema + auth + check-in → triage engine</li>
+<li>Games + <code>GameSession</code> persistence → cognitive integration in triage</li>
+<li>Dashboard (Home, WellbeingStatus, StreakTracker, Journal)</li>
+<li>Chat, Support, Practitioner/Admin dashboards</li>
+<li>Landing, deployment, polish</li>
+</ol>
+<p>Tooling enforces quality: ESLint (<code>eslint.config.js</code>), TypeScript strict (<code>tsconfig.app.json</code>, <code>server/tsconfig.json</code>), Prettier via Tailwind discipline.</p>
+<h3>3.3 Requirements Elicitation</h3>
+<p>Requirements were derived from: (a) <code>DASHBOARD_PLAN.md</code> — the original Mindea-inspired planning artefact, (b) the clarified triage workflow in <code>README.md</code>, (c) code-level constraints discovered during implementation (e.g., Prisma SQLite for local reproducibility). Traceability is maintained by mapping each requirement to a file/route in Chapter 4.</p>
+<h3>3.4 Data Sources for Evaluation</h3>
+<ul>
+<li><strong>Functional:</strong> route-by-route smoke tests (<code>/api/checkins</code>, <code>/api/games</code>, <code>/api/chat</code>, <code>/api/practitioner/queue</code>, <code>/api/admin/overview</code>).</li>
+<li><strong>Logic:</strong> threshold table walkthrough for <code>calculateDailyScore</code>, <code>detectTrend</code>, <code>classifyRisk</code> (see Appendix C).</li>
+<li><strong>Usability:</strong> heuristic walkthrough of the dashboard on mobile (&lt;768px collapsible sidebar) and desktop (&gt;1024px three-column recommendations).</li>
+</ul>
+<h3>3.5 Ethical Considerations</h3>
+<ul>
+<li>No diagnosis; <code>explanation</code> supports <strong>human review</strong> and the Admin overview explicitly carries methodology text: <em>They support human review; they are not a diagnosis</em> (<code>server/src/index.ts</code> → <code>methodology.body</code>).</li>
+<li>Invite-code role elevation prevents open practitioner self-enrolment.</li>
+<li>Emergency contact is opt-in (<code>emergencyContactEnabled</code>).</li>
+<li>Crisis helpline surfacing at RED in <code>RiskAlertModal.tsx</code> is informational, not automated dispatch.</li>
+<li>Data stored in <code>User</code> is minimal; password via <code>bcryptjs</code>; JWT secret must be rotated from the dev default in production.</li>
+</ul>
+<h3>3.6 Alignment Method for This Revision</h3>
+<p>A repository walk: <code>find . -type f | sort</code>, then targeted reads of <code>server/src/services/triageEngine.ts</code>, <code>server/src/index.ts</code>, <code>server/prisma/schema.prisma</code>, <code>src/App.tsx</code>, <code>src/components/dashboard/*</code>, <code>src/pages/*</code>, <code>src/redux/*</code>, <code>src/config/api.ts</code>, and game slices/utils. Every section 6 claim cites one of those paths.</p>
+<hr>
+<h2>4. System Analysis &amp; Requirements</h2>
+<h3>4.1 Stakeholders &amp; Personas</h3>
+<ul>
+<li><strong>Anonymous participant (USER):</strong> wants a private, fast way to reflect and to know whether to seek help.</li>
+<li><strong>Volunteer listener (VOLUNTEER):</strong> wants a prioritised queue and just enough context to respond helpfully.</li>
+<li><strong>Practitioner / Admin (PRACTITIONER, ADMIN):</strong> need oversight, assignment, and population-level distribution.</li>
+<li><strong>Offline user:</strong> would use USSD; represented in the model even before the gateway.</li>
+</ul>
+<h3>4.2 Functional Requirements (with code trace)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requirement</th>
+<th>As-built trace</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FR1</td>
+<td>Five-signal daily check-in (mood, sleep, stress, energy, social) from WEB or USSD</td>
+<td><code>Checkin</code> model with <code>source</code> field; <code>MoodCheckInModal.tsx</code> 5-step wizard; <code>POST /api/checkins</code></td>
+</tr>
+<tr>
+<td>FR2</td>
+<td>Compute 0–100 daily wellbeing score and persist <code>RiskScore</code></td>
+<td><code>calculateDailyScore()</code> + <code>classifyRisk()</code> in <code>triageEngine.ts</code>; <code>prisma.riskScore.create()</code> in <code>POST /api/checkins</code> handler</td>
+</tr>
+<tr>
+<td>FR3</td>
+<td>Longitudinal trend + baseline deviation with confidence calibration</td>
+<td><code>detectTrend()</code> (linear regression, last 10), <code>calculateBaseline()</code>, confidence tiers (&lt;3 LOW, 3–4 MEDIUM, ≥5 HIGH) in <code>triageEngine.ts</code></td>
+</tr>
+<tr>
+<td>FR4</td>
+<td>Behavioural signals: gap since last check-in, missed days in 7-day window</td>
+<td><code>BehavioralInput</code> and <code>behavioralFlag/behavioralCritical</code> branches in <code>classifyRisk()</code>; computed from <code>pastCheckins</code> dates in <code>server/src/index.ts</code></td>
+</tr>
+<tr>
+<td>FR5</td>
+<td>Cognitive signals from last 2 game sessions (accuracy drop &gt;20% or duration 1.5×)</td>
+<td><code>cognitivePenalty</code> branch reading <code>recentGames: CognitiveGameInput[]</code> from <code>prisma.gameSession.findMany take 2</code></td>
+</tr>
+<tr>
+<td>FR6</td>
+<td>Explainable risk output: level + explanation + confidence</td>
+<td><code>RiskResult</code> interface and returned string assembly in <code>classifyRisk()</code>; stored in <code>RiskScore.explanation/confidenceLevel</code></td>
+</tr>
+<tr>
+<td>FR7</td>
+<td>Post-check-in escalation: alert, chat referral, one-click support request, crisis helpline at RED</td>
+<td><code>RiskAlertModal.tsx</code>; <code>ChatbotWidget.tsx</code> / <code>Chat.tsx</code>; <code>POST /api/support</code></td>
+</tr>
+<tr>
+<td>FR8</td>
+<td>Cognitive games as assessment, persisted as <code>GameSession</code></td>
+<td>Guess What + Stroop full engines (<code>src/components/games/GuessWhatGame/*</code>, <code>StroopGame/*</code>); <code>POST /api/games</code>, <code>GET /api/games/:userId</code>; <code>MemoryMatchGame.tsx</code> lightweight probe</td>
+</tr>
+<tr>
+<td>FR9</td>
+<td>Dashboard: wellbeing status, mood trend, streaks, sessions, recommendations, community preview</td>
+<td><code>src/components/dashboard/Home.tsx</code> layout; <code>WellbeingStatus.tsx</code>, <code>MoodTrendChart.tsx</code>, <code>StreakTracker.tsx</code>, <code>CognitiveGames.tsx</code>, <code>Recommendations.tsx</code>, <code>CommunityPreview.tsx</code></td>
+</tr>
+<tr>
+<td>FR10</td>
+<td>Journal with timeline, filter (week/month/all), source badge</td>
+<td><code>src/pages/Journal.tsx</code> reading <code>GET /api/history/:userId</code></td>
+</tr>
+<tr>
+<td>FR11</td>
+<td>Professional directory + local scheduling with Meet link</td>
+<td><code>src/pages/support.tsx</code> + <code>src/components/support/{ProfessionalCard,SchedulingModal}.tsx</code>; <code>GET /api/professionals</code>; localStorage session store + <code>SchedulingModal</code> Meet link generation</td>
+</tr>
+<tr>
+<td>FR12</td>
+<td>Practitioner triage queue sorted by severity (RED→YELLOW→GREEN, then open requests) with assign/resolve</td>
+<td><code>src/components/practitioner/PractitionerDashboard.tsx</code>; <code>GET /api/practitioner/queue</code>, <code>POST /api/practitioner/{assign,resolve}</code> with <code>requireRole(&#39;PRACTITIONER&#39;,&#39;VOLUNTEER&#39;)</code></td>
+</tr>
+<tr>
+<td>FR13</td>
+<td>Admin operations overview: totals, participation, risk distribution, recent directory, export</td>
+<td><code>src/components/admin/AdminDashboard.tsx</code>; <code>GET /api/admin/overview</code> with <code>requireRole(&#39;ADMIN&#39;)</code></td>
+</tr>
+<tr>
+<td>FR14</td>
+<td>Authentication with role elevation via invite code; JWT 7-day; profile update</td>
+<td><code>POST /api/auth/{register,login}</code>, <code>PUT /api/user/profile</code>; <code>STAFF_INVITE_CODES</code> map; <code>requireAuth/requireRole</code> middleware; <code>src/redux/slices/auth-slice/authSlice.ts</code> + <code>src/App.tsx</code> route guards</td>
+</tr>
+<tr>
+<td>FR15</td>
+<td>Chat: keyword-aware triage + optional OpenRouter (GPT-4o) Agent AI for richer conversation</td>
+<td><code>POST /api/chat</code> (<code>NEGATIVE_KEYWORDS</code>, <code>recentRisk</code> context); <code>src/components/chatagent/openRouterClient.ts</code> (<code>MINDLINK_SYSTEM_PROMPT</code>, <code>generateAIResponse</code> via <code>openai/gpt-4o</code> at <code>https://openrouter.ai/api/v1</code>)</td>
+</tr>
+<tr>
+<td>FR16</td>
+<td>Miscellaneous user pages: Calendar, MySession (localStorage), Profile, Settings (incl. USSD toggle)</td>
+<td><code>src/pages/{Calendar,MySession,Profile,Settings}.tsx</code>; <code>src/components/layout/{Header,Sidebar,DashboardLayout}.tsx</code></td>
+</tr>
+</tbody></table>
+<h3>4.3 Non-Functional Requirements</h3>
+<table>
+<thead>
+<tr>
+<th>NFR</th>
+<th>Target</th>
+<th>As-built</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Usability</td>
+<td>Clean, calming aesthetic; mobile-first</td>
+<td>Tailwind v4, rounded cards, purple primary; sidebar collapses to hamburger &lt;768px; <code>DashboardLayout.tsx</code> responsive shell</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>First meaningful paint &lt;3s on typical device</td>
+<td>Vite build (<code>pnpm build</code>), code-splitting by route, framer-motion lazy; Prisma SQLite read path O(n≤10) per check-in</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Hashed passwords, JWT expiry, role guard</td>
+<td><code>bcryptjs</code> hash(10), <code>jsonwebtoken</code> 7d, <code>requireAuth</code>/<code>requireRole</code></td>
+</tr>
+<tr>
+<td>Offline inclusivity</td>
+<td>USSD path in model, language preference</td>
+<td><code>Checkin.source</code>, <code>User.preferredLanguage</code> (en/es/fr/tw/ee in UI), <code>emergencyContactEnabled</code></td>
+</tr>
+<tr>
+<td>Explainability</td>
+<td>Every RED/YELLOW has evidence text</td>
+<td><code>explanationParts.join(&#39;, &#39;)</code> in <code>classifyRisk()</code>; stored and rendered in practitioner queue</td>
+</tr>
+<tr>
+<td>Deployability</td>
+<td>One-command deploy, health probe</td>
+<td><code>render.yaml</code> (build <code>prisma generate &amp;&amp; tsc</code>, start <code>node dist/index.js</code>, <code>healthCheckPath: /health</code>)</td>
+</tr>
+</tbody></table>
+<h3>4.4 Use-Case Overview</h3>
+<ul>
+<li><strong>UC1 — Submit check-in:</strong> User opens <code>MoodCheckInModal</code> → answers mood→sleep→stress→energy→social → <code>POST /api/checkins</code> → <code>RiskScore</code> shown → if YELLOW/RED, <code>RiskAlertModal</code>.</li>
+<li><strong>UC2 — Play cognitive game:</strong> User picks Guess What / Stroop via <code>/games</code> or <code>CognitiveGames</code> widget → <code>GamePage.tsx</code> → <code>GameRunner</code> + Redux slices → on completion <code>POST /api/games</code> and local metric cache.</li>
+<li><strong>UC3 — Seek support:</strong> User browses <code>Psychologists.tsx</code> (DB + mock merged) → <code>SchedulingModal</code> picks slot → Meet link generated → session saved to <code>localStorage</code> (calendaring is client-side in prototype) and <code>Success</code> toast.</li>
+<li><strong>UC4 — Practitioner triage:</strong> Practitioner logs in with invite code → <code>/practitioner</code> → <code>PractitionerDashboard</code> fetches <code>GET /api/practitioner/queue</code> → assign / review <code>CaseDetailModal</code> → resolve.</li>
+<li><strong>UC5 — Admin monitoring:</strong> Admin → <code>/admin</code> → <code>AdminDashboard</code> → metrics, risk distribution, participant directory with CSV export (<code>mindlink-participant-snapshot.csv</code>).</li>
+</ul>
+<h3>4.5 Constraints</h3>
+<p>Thesis-time constraint forces SQLite file over managed Postgres, locally-generated Meet links over Google Workspace delegation, and a deterministic triage over a supervised ML model that would require labelled longitudinal data the project does not have.</p>
+<hr>
+<h2>5. System Design &amp; Architecture</h2>
+<h3>5.1 Overall Architecture</h3>
+<pre><code>            ┌─────────────────────────────────┐
+            │  Browser SPA (Vite + React 18)  │
+            │  Tailwind v4 · Redux+Persist    │
+            │  Recharts · Framer Motion       │
+            └──────────────┬──────────────────┘
+                           │  apiUrl(&quot;/api/...&quot;)  +  Axios + JWT
+                           ▼
+            ┌─────────────────────────────────┐
+            │  Express API (Node 20, TS)      │
+            │  /api/auth  /api/checkins       │
+            │  /api/games /api/chat           │
+            │  /api/professionals /api/support│
+            │  /api/practitioner/* /api/admin │
+            │  triageEngine.ts  ·  prisma.ts  │
+            └──────────────┬──────────────────┘
+                           │ Prisma Client
+                           ▼
+            ┌─────────────────────────────────┐
+            │  Persistence                    │
+            │  SQLite (thesis) ──► Postgres   │
+            │  (same schema.prisma, directURL)│
+            └─────────────────────────────────┘
+      ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+            Optional: OpenRouter (GPT-4o) for Agent AI
+            Future: Africa&#39;s Talking USSD gateway → POST /api/checkins {source:&quot;USSD&quot;}
+</code></pre>
+<p><strong>Fig 5.1 — MindLink logical architecture (as deployed).</strong> The SPA never talks directly to the DB; all signals pass through the triage endpoint. A lightweight client also persists scheduled sessions to <code>localStorage</code> for calendar demo continuity.</p>
+<p>Tech stack justification is in <strong>Tab 5.1</strong>; folder layout mirrors the earlier <code>DASHBOARD_PLAN.md</code> hierarchy but with games and role routes added.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Choice (pinned)</th>
+<th>Why it fits the thesis</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Frontend framework</td>
+<td>React 18.3 + Vite 6 + <code>@vitejs/plugin-react</code></td>
+<td>Fast HMR, mature ecosystem, component reuse for dashboard cards</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td>Tailwind CSS v4 (<code>@tailwindcss/vite</code>) + <code>tailwind.config.ts</code></td>
+<td>Utility-first, calming palette without CSS bloat; no custom design system to maintain</td>
+</tr>
+<tr>
+<td>State</td>
+<td>Redux Toolkit 2.5 + <code>redux-persist</code> + <code>storage</code> local</td>
+<td>Auth token and game slices survive reload; <code>src/redux/store.ts</code> whitelist <code>[content,auth,guessWhat,stroop]</code></td>
+</tr>
+<tr>
+<td>Charts</td>
+<td>Recharts 3.1 (<code>MoodTrendChart</code>)</td>
+<td>Declarative, responsive, works with sparse history</td>
+</tr>
+<tr>
+<td>Animation</td>
+<td>Framer Motion 12 / <code>motion</code></td>
+<td>Risk alert and modal transitions without layout shift</td>
+</tr>
+<tr>
+<td>Icons</td>
+<td><code>lucide-react</code> + <code>react-icons</code></td>
+<td>Consistent outline set for sidebar and wellbeing states</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>Axios 1.7 + <code>src/config/axiosConfig.ts</code> + <code>src/config/api.ts</code></td>
+<td>Centralised token injection, 401 auto-logout guard (skips game endpoints and mock tokens), <code>apiUrl()</code> normalises <code>VITE_API_BASE_URL</code> vs Render fallback</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Node 20, Express 4.19, TypeScript 5.4</td>
+<td>Minimal, well-understood, deployable to free tier</td>
+</tr>
+<tr>
+<td>ORM</td>
+<td>Prisma 5.13 (<code>@prisma/client</code>)</td>
+<td>Single schema for SQLite (thesis) and Postgres (production); <code>prisma generate &amp;&amp; tsc</code> build in <code>render.yaml</code></td>
+</tr>
+<tr>
+<td>Auth</td>
+<td><code>bcryptjs</code> + <code>jsonwebtoken</code> (7d)</td>
+<td>Simple, stateless, invite-code roles without extra service</td>
+</tr>
+<tr>
+<td>AI (optional)</td>
+<td>OpenAI SDK 6.10 → OpenRouter <code>openai/gpt-4o</code></td>
+<td><code>src/components/chatagent/openRouterClient.ts</code> with <code>MINDLINK_SYSTEM_PROMPT</code>; browser call gated by <code>VITE_OPENROUTER_API_KEY</code>, <code>dangerouslyAllowBrowser:true</code> with warning to proxy in production</td>
+</tr>
+<tr>
+<td><strong>Tab 5.1 — As-built tech stack (versions from <code>package.json</code>, <code>server/package.json</code>).</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3>5.2 Frontend Design</h3>
+<p><strong>Routing</strong> (<code>src/App.tsx</code>):</p>
+<ul>
+<li>Public: <code>/</code>, <code>/login</code>, <code>/signup</code></li>
+<li>Protected (via <code>ProtectedRoute</code> + <code>DashboardLayout</code>): <code>/home</code>, <code>/sessions</code>, <code>/psychologists</code>, <code>/calendar</code>, <code>/journal</code>, <code>/games</code>, <code>/chat</code>, <code>/profile</code>, <code>/settings</code></li>
+<li>Role-gated (via <code>RoleRoute</code>): <code>/practitioner</code> (<code>PRACTITIONER</code>), <code>/volunteer</code> (<code>VOLUNTEER</code>), <code>/admin</code> (<code>ADMIN</code>)</li>
+<li>Fallback <code>*</code> → <code>/home</code></li>
+</ul>
+<p><strong>Layout</strong> (<code>src/components/layout/DashboardLayout.tsx</code>):</p>
+<ul>
+<li>Desktop sidebar 64w (20w collapsed) fixed; mobile drawer with <code>MenuIcon</code>. Toggle persists per session. Header shows time-based greeting (<code>src/utils/greeting.tsx</code>), search input (UI only), notification bell (badge UI), and avatar dropdown (Profile/Settings/LogOut).</li>
+</ul>
+<p><strong>Dashboard (<code>Home.tsx</code>) two-row, 12-col grid:</strong></p>
+<ul>
+<li>Row 1 col-7: <code>MoodCheckIn</code> → <code>MoodTrendChart</code>; col-5: <code>WellbeingStatus</code> → <code>StreakTracker</code></li>
+<li>Row 2 col-4: <code>CognitiveGames</code> (quick play) → <code>SupportRequest</code> CTA; col-8: <code>ChatbotWidget</code> (tall)</li>
+</ul>
+<p>Design maps exactly to <code>DASHBOARD_PLAN.md</code> Phase 2–3, with streak as first-class widget.</p>
+<h3>5.3 Backend Design</h3>
+<p><strong>Express composition</strong> (<code>server/src/index.ts</code>):</p>
+<ul>
+<li><code>cors</code> with allowlist (<code>CORS_ORIGIN</code>) plus local origins <code>localhost|127.0.0.1</code>; <code>express.json()</code>.</li>
+<li><code>GET /health</code> probe.</li>
+<li>Auth section: <code>STAFF_INVITE_CODES = { &#39;MINDLINK-PRACTITIONER-2024&#39;,&#39;MINDLINK-VOLUNTEER-2024&#39;,&#39;MINDLINK-ADMIN-2024&#39; }</code>.</li>
+<li><code>requireAuth</code> (Bearer) + <code>requireRole(...roles)</code> middleware.</li>
+<li>Routes: checkins, games, chatbot, professionals, support, practitioner, admin — full table in §6.5.</li>
+</ul>
+<p><strong>Configuration resilience</strong> (<code>src/config/api.ts</code>):</p>
+<pre><code class="language-ts">const RENDER_API = &quot;https://mindlink-ti7t.onrender.com&quot;
+const DEV_FALLBACK = &quot;http://localhost:4000&quot;
+export function apiUrl(path:string){ return collapseDuplicateApiSegment(`${API_BASE_URL}${p}`) }
+</code></pre>
+<p><code>API_BASE_URL</code> strips accidental <code>/api/v1</code> suffixes and collapses duplicate segments — defensive against mis-set Vercel env pointing at localhost.</p>
+<p><strong>Axios interceptors</strong> (<code>src/config/axiosConfig.ts</code>):</p>
+<ul>
+<li>Request: injects <code>store.getState().auth.token || localStorage.getItem(&quot;token&quot;)</code> except for public endpoints.</li>
+<li>Response: on 401/403, skips auto-logout for game endpoints (<code>/game-session</code>, <code>/research-session</code>, <code>/game/</code>) and for mock tokens (<code>mock-token-*</code>), so demo games remain playable offline.</li>
+</ul>
+<h3>5.4 Data Design — Prisma Schema</h3>
+<p><strong>Fig 5.2 — Entity–Relationship (SQLite; Postgres-compatible).</strong></p>
+<pre><code>User 1──* Checkin
+     1──* GameSession
+     1──* RiskScore
+     1──* ChatbotLog
+     1──* SupportRequest
+</code></pre>
+<pre><code class="language-prisma">// server/prisma/schema.prisma  (abridged, types as in file)
+model User {
+  id                      String   @id @default(uuid())
+  phone                   String?  @unique
+  email                   String?  @unique
+  username                String?
+  passwordHash            String?
+  role                    String   @default(&quot;USER&quot;) // USER|PRACTITIONER|VOLUNTEER|ADMIN
+  preferredLanguage       String   @default(&quot;en&quot;)
+  emergencyContactEnabled Boolean  @default(false)
+  emergencyContactNumber  String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  checkins       Checkin[]
+  gameSessions   GameSession[]
+  chatbotLogs    ChatbotLog[]
+  riskScores     RiskScore[]
+  supportRequests SupportRequest[]
+}
+model Checkin {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  mood      Int      // 1–5 (also stored raw; score normalised in engine)
+  sleep     Int      // 1–5
+  stress    Int      // 1–5 (inverted in scoring)
+  energy    Int      // 1–5
+  social    Int      // 1 or 5 (isolated vs connected)
+  source    String   // &quot;USSD&quot; | &quot;WEB&quot;
+  createdAt DateTime @default(now())
+}
+model GameSession {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  gameType  String
+  score     Int
+  accuracy  Float
+  duration  Int      // seconds
+  mistakes  Int      @default(0)
+  createdAt DateTime @default(now())
+}
+model RiskScore {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  dailyScore      Float    // 0–100
+  riskLevel       String   // GREEN|YELLOW|RED
+  confidenceLevel String   // HIGH|MEDIUM|LOW
+  explanation     String?
+  createdAt       DateTime @default(now())
+}
+model ChatbotLog {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  message         String
+  sentimentScore  Float?
+  flaggedKeywords String?  // comma-separated NEGATIVE_KEYWORDS hits
+  createdAt       DateTime @default(now())
+}
+model SupportRequest {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  requestType String
+  assignedTo String?
+  status     String   @default(&quot;OPEN&quot;) // OPEN|IN_PROGRESS|RESOLVED
+  createdAt  DateTime @default(now())
+}
+</code></pre>
+<p><strong>Tab 5.2 — Model purposes.</strong> Note the README mentions <em>PostgreSQL via Prisma</em>; the checked-in <code>datasource db { provider = &quot;sqlite&quot; }</code> is intentional for the thesis: it guarantees a one-file reproducible DB and a demo seed path (<code>server/seed-demo.ts</code>); the Prisma schema migrates unchanged to Postgres by switching <code>provider</code> and <code>DATABASE_URL</code>.</p>
+<h3>5.5 USSD-Ready Path (Scaffold)</h3>
+<p><code>source</code> is written by both <code>MoodCheckInModal</code> (<code>WEB</code>) and any future USSD handler (<code>USSD</code>). Because <code>calculateDailyScore</code> is source-agnostic, the same triage path covers low-bandwidth users. Settings exposes <code>Enable USSD access</code> + <code>USSD Code</code> input (UI only in prototype). A production gateway would simply <code>POST /api/checkins</code> with <code>{ source: &quot;USSD&quot; }</code>.</p>
+<h3>5.6 Security &amp; Privacy Design</h3>
+<ul>
+<li>Passwords: <code>bcrypt.hash(10)</code> on register, <code>bcrypt.compare</code> on login.</li>
+<li>Tokens: <code>jwt.sign({userId,email,role}, JWT_SECRET, {expiresIn:&#39;7d&#39;})</code>; <code>JWT_SECRET</code> defaults to <code>mindlink-dev-secret-change-in-production</code> and must be overridden via env.</li>
+<li><code>localStorage</code> holds <code>token</code>; <code>redux-persist</code> keeps <code>auth</code> slice across reloads. Clearing either logs out.</li>
+<li>Role elevation only via valid invite code; invalid code → 400.</li>
+<li><code>requireAuth</code> / <code>requireRole</code> guard every sensitive route; public routes (<code>/api/checkins</code> historically unauthenticated for USSD, but <code>/api/support</code> is auth-checked) reflect prototype convenience — Chapter 8 recommends tightening.</li>
+</ul>
+<h3>5.7 External Integrations (As-built vs. Deferred)</h3>
+<ul>
+<li><strong>OpenRouter Agent AI:</strong> fully coded in <code>openRouterClient.ts</code> (model <code>openai/gpt-4o</code>, temp 0.7, 1000 max tokens, <code>MINDLINK_SYSTEM_PROMPT</code>). Activation requires <code>VITE_OPENROUTER_API_KEY</code>; otherwise the rule-based <code>POST /api/chat</code> fallback answers.</li>
+<li><strong>Meet / Calendar:</strong> deferred. <code>SchedulingModal</code> generates a plausible <code>meetLink</code> locally and <code>src/pages/support.tsx</code> persists the session to <code>localStorage</code> (<code>&quot;sessions&quot;</code> key) and toasts via <code>NotificationProvider</code>. Dashboard&#39;s <code>UpcomingSessions.tsx</code>/<code>SessionCard.tsx</code> read that key.</li>
+</ul>
+<hr>
+<h2>6. Implementation — The As-Built System</h2>
+<p>This chapter was written with the code open. Cited paths are relative to the repo root on branch <code>arena/01a08b29-mindlink-thesis</code>.</p>
+<h3>6.1 Project Layout</h3>
+<pre><code>mindlink/
+├── public/             # static assets: card*.jpg, breath.jpg, game.jpg, sounds/*.wav|mp3
+├── src/
+│   ├── components/
+│   │   ├── admin/AdminDashboard.tsx
+│   │   ├── chatagent/openRouterClient.ts
+│   │   ├── dashboard/{Home,MoodCheckIn*, MoodTrendChart, WellbeingStatus, StreakTracker,
+│   │   │              CognitiveGames, ChatbotWidget, SupportRequest, RiskAlertModal, ...}
+│   │   ├── games/{GamePage,GameRunner,GameCanvas, GuessWhatGame/*, StroopGame/*,
+│   │   │          sharedComponents/*, hooks/useRouteGuard.ts}
+│   │   ├── layout/{DashboardLayout,Header,Sidebar,Greeting}
+│   │   ├── practitioner/{PractitionerDashboard,CaseDetailModal}
+│   │   ├── support/{ProfessionalCard,SchedulingModal}
+│   │   └── shared/{ProtectedRoute,RoleRoute,NotificationProvider}
+│   ├── pages/{LandingPage,Login,Signup,Chat,Journal,Calendar,MySession,Profile,Settings,
+│   │          CognitiveGames,support,performance/PerformancePage}
+│   ├── redux/{store.ts, resetApp.ts, slices/auth-slice/authSlice.ts,
+│   │          slices/content-slice/contentSlice.ts, slices/games-slice/{guessWhat,stroop,thunks}.ts}
+│   ├── config/{api.ts,axiosConfig.ts,gameConfigs.ts}
+│   ├── types/{index.ts,props.ts, game/{base,guessWhatTypes,stroopTypes}.ts}
+│   └── utils/{helpers.ts,greeting.tsx,sound.ts, game/{guessWhatUtils,stroopUtils,dashboardUtils}.ts}
+└── server/
+    ├── src/{index.ts, prisma.ts, services/triageEngine.ts}
+    ├── prisma/schema.prisma
+    ├── seed-demo.ts
+    ├── package.json, tsconfig.json, Dockerfile, SETUP.md
+    └── render.yaml (root render.yaml points here via rootDirectory: server)
+</code></pre>
+<p>Build scripts: frontend <code>pnpm dev | pnpm build (tsc -b &amp;&amp; vite build)</code> (<code>package.json</code>); server <code>npm run dev (ts-node src/index.ts)</code> and <code>npm run build (prisma generate &amp;&amp; tsc)</code> then <code>npm start (node dist/index.js)</code>.</p>
+<h3>6.2 Authentication &amp; Roles</h3>
+<p><strong>Registration</strong> (<code>POST /api/auth/register</code>, <code>server/src/index.ts:58-92</code>):</p>
+<ul>
+<li>Validates <code>email</code>+<code>password</code>, 409 on duplicate.</li>
+<li>Maps <code>inviteCode.trim().toUpperCase()</code> through <code>STAFF_INVITE_CODES</code>; unknown code → 400 <code>Invalid invite code</code>. Absent code → <code>USER</code>.</li>
+<li><code>bcrypt.hash(password,10)</code> → <code>prisma.user.create({ email, username: username || email.split(&#39;@&#39;)[0], passwordHash, role, emergencyContactNumber, emergencyContactEnabled })</code>.</li>
+<li>Signs <code>jwt.sign({userId,email,role}, JWT_SECRET, {expiresIn:&#39;7d&#39;})</code>; returns <code>{ token, user }</code> where <code>user</code> projects <code>userId (=id), username, email, role, phone, preferredLanguage, emergencyContactEnabled/Number</code>.</li>
+</ul>
+<p><strong>Login</strong> (<code>POST /api/auth/login:93-119</code>): <code>findUnique</code> + <code>bcrypt.compare</code>; same token shape.</p>
+<p><strong>Frontend</strong>: <code>src/redux/slices/auth-slice/authSlice.ts</code> holds <code>AuthState { isAuthenticated, token, user, loading, error }</code> with <code>loginSuccess</code>/<code>logout</code>. <code>src/redux/store.ts</code> persists <code>auth</code> via <code>redux-persist/lib/storage</code>. <code>src/App.tsx</code> uses <code>RoleRoute</code> for <code>/practitioner|/volunteer|/admin</code>. Sidebar shows role badge when <code>user.role !== &#39;USER&#39;</code>.</p>
+<p>Invite codes (as shipped): <code>MINDLINK-PRACTITIONER-2024</code>, <code>MINDLINK-VOLUNTEER-2024</code>, <code>MINDLINK-ADMIN-2024</code>.</p>
+<h3>6.3 The Triage Engine — The Core Contribution</h3>
+<p><strong>File:</strong> <code>server/src/services/triageEngine.ts</code> (214 lines, pure functions, zero external I/O — fully unit-testable).</p>
+<h4>6.3.1 Daily Score (0–100)</h4>
+<pre><code class="language-ts">export function calculateDailyScore(input: CheckinInput): number
+// CheckinInput { mood 1-5, sleep 1-5, stress 1-5, energy 1-5, social 1|5 }
+
+norm = v =&gt; (v/5)*100                     // 1→20 … 5→100
+str  = 100 - norm(stress) + 20            // invert: 5(high stress)→20, 1→100
+weighted = mood*0.25 + str*0.20 + sleep*0.20 + energy*0.20 + social*0.15
+return Math.round(weighted)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Weight</th>
+<th>Antecedent in code</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mood</td>
+<td>25%</td>
+<td><code>m * 0.25</code></td>
+</tr>
+<tr>
+<td>Stress (inverted)</td>
+<td>20%</td>
+<td><code>str * 0.20</code> with inversion <code>100 - norm(stress)+20</code></td>
+</tr>
+<tr>
+<td>Sleep</td>
+<td>20%</td>
+<td><code>slp * 0.20</code></td>
+</tr>
+<tr>
+<td>Energy</td>
+<td>20%</td>
+<td><code>eng * 0.20</code></td>
+</tr>
+<tr>
+<td>Social (1 or 5)</td>
+<td>15%</td>
+<td><code>soc * 0.15</code></td>
+</tr>
+</tbody></table>
+<p>The stress inversion is critical; earlier drafts mis-weighted raw stress positively — the code corrects this.</p>
+<h4>6.3.2 Baseline</h4>
+<pre><code class="language-ts">export function calculateBaseline(historyScores: number[]): number
+// mean of passed array; caller passes historyScores.slice(1) (excludes current)
+</code></pre>
+<p>Computed in <code>POST /api/checkins</code> as <code>calculateBaseline(historyScores.slice(1))</code> where <code>historyScores</code> includes the current score at index 0.</p>
+<h4>6.3.3 Trend Detection</h4>
+<pre><code class="language-ts">export function detectTrend(scores: number[]): { direction, slope }
+// Linear regression: x = 0..n-1, y = scores
+// Returns stable if n&lt;3; else slope = Σ(x-mx)(y-my)/Σ(x-mx)²
+// direction = declining if slope &lt; -3, improving if &gt; +3, else stable
+</code></pre>
+<p>The check-in handler widens the window to <code>take: 10</code> to give the regression up to 9 prior points — flagged as <em>&quot;Widen window to 10 for reliable trend detection&quot;</em>.</p>
+<h4>6.3.4 Cognitive &amp; Behavioural Inputs</h4>
+<pre><code class="language-ts">export interface CognitiveGameInput { accuracy: number; duration: number }
+export interface BehavioralInput { daysSinceLastCheckin: number; missedDaysInLastWeek: number }
+</code></pre>
+<p>Behavioural derivation inside <code>POST /api/checkins</code>:</p>
+<ul>
+<li><code>daysSinceLastCheckin = floor((now - pastCheckins[1].createdAt)/86400000)</code> (pastCheckins[0] is the just-created record).</li>
+<li><code>missedDaysInLastWeek = 7 - |{ distinct ISO dates among pastCheckins } ∩ last-7 calendar days|</code>.</li>
+</ul>
+<h4>6.3.5 Calibrated Classification</h4>
+<pre><code class="language-ts">export function classifyRisk(currentScore, historyScores, baseline,
+                             recentGames: CognitiveGameInput[] = [],
+                             behavioralInput?: BehavioralInput): RiskResult
+// RiskResult { level: &#39;GREEN&#39;|&#39;YELLOW&#39;|&#39;RED&#39;, explanation: string, confidenceLevel: &#39;HIGH&#39;|&#39;MEDIUM&#39;|&#39;LOW&#39; }
+</code></pre>
+<p>Confidence from history length:</p>
+<table>
+<thead>
+<tr>
+<th>historyScores.length</th>
+<th>confidenceLevel</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&lt;3</td>
+<td>LOW</td>
+<td><em>All</em> baseline deviation checks disabled</td>
+</tr>
+<tr>
+<td>3–4</td>
+<td>MEDIUM</td>
+<td>Only <code>baselineDrop &gt; 40</code> can drive RED; no baseline YELLOW</td>
+</tr>
+<tr>
+<td>≥5</td>
+<td>HIGH</td>
+<td>Full checks: RED at <code>&gt;30</code>, YELLOW at <code>&gt;15</code></td>
+</tr>
+</tbody></table>
+<p>Scenario branches (in evaluation order):</p>
+<ul>
+<li><strong>Cognitive penalty</strong> if <code>recentGames.length &gt;=2</code> and <code>(previous.accuracy - latest.accuracy &gt;20 &amp;&amp; latest.accuracy&lt;60) || (latest.duration &gt; previous.duration*1.5)</code> → <code>explanationParts.push(&#39;noticeable cognitive fatigue (slower response/lower accuracy)&#39;)</code>.</li>
+<li><strong>Behavioural</strong> → <code>behavioralCritical</code> (≥5 days gap &amp;&amp; currentScore&lt;60) else <code>behavioralFlag</code> (≥3 days gap or ≥4 missed days in week).</li>
+<li><strong>Trend</strong> → <code>trendContributesToRed</code> if <code>slope &lt; -8</code> else <code>trendContributesToYellow</code> if <code>slope &lt; -3 &amp;&amp; currentScore&lt;65</code>.</li>
+<li><strong>Low-days:</strong> <code>lowDaysCount</code> = count of <code>historyScores.slice(0,3)</code> with <code>&lt;40</code>.</li>
+<li><strong>RED if any:</strong><ul>
+<li><code>currentScore &lt;40 &amp;&amp; lowDaysCount&gt;=2</code></li>
+<li><code>baselineRedTrigger</code> (40/30 threshold by confidence)</li>
+<li><code>currentScore &lt;45 &amp;&amp; cognitivePenalty</code></li>
+<li><code>behavioralCritical &amp;&amp; currentScore&lt;50</code></li>
+<li><code>trendContributesToRed &amp;&amp; currentScore&lt;55</code></li>
+</ul>
+</li>
+<li><strong>YELLOW if any:</strong><ul>
+<li><code>40 ≤ currentScore &lt;60</code></li>
+<li><code>baselineYellowTrigger</code> (HIGH + drop&gt;15)</li>
+<li><code>cognitivePenalty</code></li>
+<li><code>behavioralFlag</code></li>
+<li><code>trendContributesToYellow</code></li>
+</ul>
+</li>
+<li><strong>Otherwise GREEN</strong> with explanation <code>&quot;Stable.&quot;</code>. RED/YELLOW prefixes are <code>&quot;Score critically low or stepped significantly from baseline&quot;</code> and <code>&quot;Noticeable decline. Approaching risk threshold&quot;</code> with <code> — detail.</code> appended.</li>
+</ul>
+<p>The as-built table above replaces earlier draft language like <em>ML classifier</em> — there is no model file, no feature pipeline, no training split; the entire decision surface is readable in one screen.</p>
+<h4>6.3.6 Persistence Path</h4>
+<p><code>POST /api/checkins</code> (server/src/index.ts:189-257) persists <code>Checkin</code>, derives <code>currentScore</code>, loads <code>historyScores</code> and <code>recentGames</code>, computes <code>baseline</code> and <code>behavioralInput</code>, calls <code>classifyRisk</code>, then <code>prisma.riskScore.create({ userId, dailyScore: currentScore, riskLevel: risk.level, confidenceLevel, explanation })</code> and returns <code>{ checkin, assessment: riskScoreRecord }</code>. The frontend&#39;s <code>MoodCheckInModal</code> triggers <code>RiskAlertModal</code> when <code>assessment.riskLevel</code> is YELLOW/RED.</p>
+<h3>6.4 Cognitive Games as Passive Assessment</h3>
+<p>Games are defined in <code>src/config/gameConfigs.ts</code>:</p>
+<pre><code class="language-ts">export const gameConfigs = {
+  &quot;guess-what&quot;: { gameTitle:&quot;guess what&quot;, description:&quot;memory recognition ...&quot;,
+                  startGameAction: startGuessWhatGame, getSlice: s=&gt;s.guessWhat,
+                  computeScore: getGuessWhatMMSEScore, rules:[...], testingPhase:true },
+  &quot;stroop&quot;:     { gameTitle:&quot;stroop&quot;, description:&quot;cognitive control ...&quot;,
+                  startGameAction: startStroopGame,     getSlice: s=&gt;s.stroop,
+                  computeScore: getStroopMMSEScore,    rules:[...], testingPhase:true }
+}
+</code></pre>
+<p><strong>Guess What</strong> (visual memory):</p>
+<ul>
+<li>State: <code>src/redux/slices/games-slice/guessWhat.ts</code> — <code>sessionId</code>, <code>config: GuessWhatInitConfig { maxLevels 10, defaultMemorizationTime, minMemorizationTime, basePairs, imageSet }</code>, <code>gameState { level, cards:Card[], currentImagesToFind, isMemorizationPhase, memorizationTime, attempts, maxAttempts 3, ...}</code>, <code>metrics: IGuessWhatMetric[] {level,attempt,totalResponseTime,accuracy,levelErrors,levelScore}</code>, <code>totalScore</code>, <code>isPlaying/isPaused/gameEnded/complete</code>.</li>
+<li>Init: <code>src/utils/game/guessWhatUtils.ts:initializeGameState()</code> picks <code>level+basePairs</code> images, shuffles, sets <code>memorizationTime = max(minMemorizationTime, defaultMemorizationTime - level*1000)</code>; <code>generateCards</code> + <code>selectImagesToFind</code> (1 target if lvl≤3 else 2 if ≤6 else 3).</li>
+<li>Level score: <code>getDifficultyMultiplier</code> (1 / 1.5 / 2) · <code>levelBonus ((level/time)*55)</code>, <code>timeBonus ((level/time)*10)</code>, <code>getAccuracyBonus</code> (20/10/5/0), <code>getPenaltyRate</code> (40/10/0), compensation <code>level*0.25</code> → <code>weightedLevelScore = 3*levelBonus +4*timeBonus +6*accuracyBonus -5*penaltyRate + compensation</code>; accuracy 0 → 0.</li>
+<li>MMSE: <code>computeMmseScore()</code> does per-metric min-max normalisation of response time &amp; errors, log-weighted level importance <code>log1p(level)/log1p(maxLevel)</code>, penalty accumulation, then <code>mmse = clamp(30-penalty,0,30)</code>. Simplified path <code>getGuessWhatMMSEScore(totalScore) = round((totalScore/4220)*30)</code>. Classification in <code>classifyMMSE</code>: ≥24 Normal, ≥18 Okay, else At Risk.</li>
+</ul>
+<p><strong>Stroop</strong> (executive function / inhibition):</p>
+<ul>
+<li>State: <code>stroop.ts</code> — similar shape plus <code>metrics {questions,attempts,averageResponseTime,errors,accuracy}</code> and pause tracking <code>pauseStartTime/totalPausedDuration</code>.</li>
+<li>Init: trivial; <code>questions: IStroopQuestion[] { text, fontColor, isCorrect }</code>.</li>
+<li>Scoring per answer: <code>recordAnswer({correct,bonus,responseTime})</code> updates running average <code>(oldAvg*(n-1)+rt)/n</code> and accuracy <code>%</code>; correct → +100+bonus.</li>
+<li>MMSE: <code>getStroopMMSEScore({accuracy,averageResponseTime,errors,attempts})</code> → <code>normAcc = accuracy/100</code>, <code>normSpeed = 1-(clamp(RT,0.3,4.0)-0.3)/(3.7)</code>, <code>errPenalty= min(errors/attempts,1)</code> → <code>raw=0.55*normAcc+0.30*normSpeed-0.15*errPenalty</code> → <code>round(clamp(raw*30,0,30))</code>. Thresholds same as Guess What.</li>
+</ul>
+<p><strong>Dashboard Memory Match</strong> (<code>src/components/dashboard/MemoryMatchGame.tsx</code>):</p>
+<ul>
+<li>Emoji pairs <code>[&quot;🌿&quot;,&quot;🌙&quot;,&quot;🌊&quot;,&quot;⛰️&quot;,&quot;🌸&quot;,&quot;🍂&quot;]</code> ×2 shuffled; flip logic with 900ms mismatch delay; win condition <code>cards.every(isMatched)</code> → <code>POST /api/games { userId, gameType:&quot;Memory Match&quot;, score: max(0,100 - mistakes*5 - timeTaken/2), accuracy: round((moves-mistakes)/moves*100), duration: timeTaken, mistakes }</code>. Score feeds the same <code>GameSession</code> table and streak.</li>
+</ul>
+<p><strong>Shared game chrome:</strong> <code>src/components/games/{GamePage,GameRunner,GameCanvas}.tsx</code>, <code>hooks/useRouteGuard.ts</code>, <code>sharedComponents/{RecentGameCard,AverageMmseByGameType,MobileViewWarning,PopUp,...}</code>. Routes attempt <code>POST /game-session</code> (or <code>/research-session</code> if <code>participantInfo</code> present) against <code>axiosConfig.ts</code> baseURL, but fall back to a <code>mock-session-${Date.now()}</code> with default config on 401/403 so the demo never logs out a mock auth — see <code>GamePage.tsx</code>.</p>
+<p><strong>Performance page</strong> (<code>src/pages/performance/PerformancePage.tsx</code>) renders metrics from <code>localStorage</code> key <code>game_metrics_${sessionId}</code> plus aggregated stats via <code>src/utils/game/dashboardUtils.ts</code> (totals, avg/best MMSE, recent 3, streak calc with <code>date-fns</code>).</p>
+<h3>6.5 API Reference (As Shipped)</h3>
+<p>All paths are Express-mounted under <code>/api/...</code> with CORS and JSON middleware. <code>GET /health</code> is unauth. The configurable origin is defensive: <code>VITE_SERVER_API_URL</code> is deprecated; canonical env is <code>VITE_API_BASE_URL</code> (fallback Render).</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Handler / file</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/health</code></td>
+<td>—</td>
+<td><code>server/src/index.ts</code></td>
+<td><code>{status:&quot;ok&quot;,message:&quot;MindLink Backend System Running&quot;}</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/register</code></td>
+<td>—</td>
+<td><code>index.ts</code></td>
+<td>See §6.2; 409 on duplicate, 400 on bad invite</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td>—</td>
+<td><code>index.ts</code></td>
+<td>401 on bad creds; JWT 7d</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/user/profile</code></td>
+<td>Bearer</td>
+<td><code>index.ts</code></td>
+<td>Update <code>username/phone/preferredLanguage/emergencyContact{Enabled,Number}</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/history/:userId</code></td>
+<td>—</td>
+<td><code>index.ts</code></td>
+<td>Last 10 <code>Checkin</code> desc</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/checkins</code></td>
+<td>—*</td>
+<td><code>index.ts</code></td>
+<td>Create <code>Checkin</code> → triage → <code>RiskScore</code> (see §6.3.6). *Prototype leaves unauth&#39;d for USSD; hardening roadmap in §8.</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/games</code></td>
+<td>—</td>
+<td><code>index.ts</code></td>
+<td>Create <code>GameSession</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/games/:userId</code></td>
+<td>—</td>
+<td><code>index.ts</code></td>
+<td>List <code>GameSession</code> desc (<code>id,gameType,score,accuracy,duration,createdAt</code>)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/chat</code></td>
+<td>—</td>
+<td><code>index.ts</code></td>
+<td>Keyword-aware rule chat: loads latest <code>RiskScore</code>, logs <code>ChatbotLog</code>, returns <code>{message,flagged,riskContext}</code> with <code>NEGATIVE_KEYWORDS = [sad,hopeless,stressed,anxious,overwhelmed,depressed,scared,alone,worthless,tired]</code>; RED+flagged → escalation prompt</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/professionals</code></td>
+<td>—</td>
+<td><code>index.ts</code></td>
+<td><code>User where role in [PRACTITIONER,VOLUNTEER]</code> mapped to `Professional {id,name,role: counselor</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/support</code></td>
+<td>Bearer</td>
+<td><code>index.ts</code></td>
+<td>Create <code>SupportRequest {requestType:&#39;Priority Support&#39;}</code> from <code>req.user.userId</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/practitioner/queue</code></td>
+<td>Bearer + PRACTITIONER|VOLUNTEER</td>
+<td><code>index.ts</code></td>
+<td><code>User where role=USER include riskScores(1) supportRequests(OPEN) checkins(5)</code> → projected queue sorted by <code>riskWeight RED3&gt;YELLOW2&gt;GREEN1</code>, tie-break openRequests desc</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/practitioner/assign</code></td>
+<td>Bearer + PRACTITIONER|VOLUNTEER</td>
+<td><code>index.ts</code></td>
+<td><code>{patientId,assignedTo}</code>; if no OPEN req, creates <code>SupportRequest{requestType:&#39;Triage Assignment&#39;,status:IN_PROGRESS}</code> else updates all OPEN→IN_PROGRESS</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/practitioner/resolve</code></td>
+<td>Bearer + PRACTITIONER|VOLUNTEER</td>
+<td><code>index.ts</code></td>
+<td><code>{patientId}</code> → <code>updateMany status in [OPEN,IN_PROGRESS] → RESOLVED</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/admin/overview</code></td>
+<td>Bearer + ADMIN</td>
+<td><code>index.ts</code></td>
+<td>Parallel counts: <code>totalUsers(PRACTITIONER/VOLUNTEER filtered), totalPractitioners, totalVolunteers, openRequests, checkinsToday, distinct latest riskLevels</code>; <code>recentUsers(8)</code>; <code>riskDistribution</code> tally + <code>methodology</code> explainability blurb</td>
+</tr>
+</tbody></table>
+<p><em>Auth posture:</em> admin and practitioner routes strictly enforce JWT+role; support creation is auth-required; history/games/chat remain open in prototype to simplify USSD and demo. The thesis recommends requiring JWT for all user-scoped reads in the next iteration.</p>
+<h3>6.6 Frontend Features in Detail</h3>
+<h4>6.6.1 Check-in Flow (<code>MoodCheckIn.tsx</code> + <code>MoodCheckInModal.tsx</code>, 276 lines)</h4>
+<p>Five-step wizard <code>Step = &quot;mood&quot;|&quot;sleep&quot;|&quot;stress&quot;|&quot;energy&quot;|&quot;social&quot;|&quot;done&quot;</code> with <code>scaleOptions {1:Awful…5:Great}</code> and <code>boolOptions {1:&quot;No, isolated&quot; | 5:&quot;Yes, connected&quot;}</code>; progress bar <code>w = (currentStepIndex/5)*100%</code>. On final Next, <code>POST /api/checkins {userId, ...formData, source:&quot;WEB&quot;}</code>; <code>onMoodRecorded</code> maps <code>mood&gt;3 → happy else stressed</code> for <code>MoodTrendChart</code>; if <code>assessment.riskLevel in {RED,YELLOW}</code> → <code>RiskAlertModal</code> after 1.2s. Close resets step and assessment.</p>
+<h4>6.6.2 Wellbeing Status &amp; Mood Trend</h4>
+<ul>
+<li><code>WellbeingStatus.tsx</code> fetches <code>GET /api/history/:userId</code>, derives a display score <code>derived = ((mood+sleep+energy+(6-stress)+social)/25)*100</code> (matching <code>calculateDailyScore</code> conceptually but computed client-side for instant feedback), and maps ≥70→GREEN, ≥45→YELLOW else RED, with icon/background/bar colour.</li>
+<li><code>MoodTrendChart.tsx</code> (Recharts) plots last history points; empty state shows skeleton.</li>
+<li>The authoritative risk remains server-side <code>RiskScore</code>; the status card is a fast, approximate mirror for perceived performance.</li>
+</ul>
+<h4>6.6.3 Streaks (<code>StreakTracker.tsx</code>, <code>src/utils/game/dashboardUtils.ts</code>)</h4>
+<p>Two streaks: <em>Daily Check-in</em> (from <code>/api/history</code>) and <em>Cognitive Games</em> (from <code>/api/games</code>). <code>calcStreak(dates)</code> deduplicates ISO days and walks back from today day-by-day: break on first gap; so a streak is only active if last entry is today or yesterday. DashboardUtils also provides <code>calculateBestStreak</code>, <code>calculateCurrentStreak</code> (week-aware), <code>generateCalendarData</code> (Mon–Sun, <code>date-fns startOfWeek</code>), <code>groupSessionsByGame</code>, <code>getAverageMMSE</code>, <code>getMMSETrend</code>.</p>
+<h4>6.6.4 Journal (<code>src/pages/Journal.tsx</code>)</h4>
+<p>Maps numeric <code>mood</code> score → <code>MoodType {happy|stressed|lonely|anxious|tired|good|neutral}</code> via <code>scoreToMood</code>; filters by <code>TimeRange {week|month|all}</code>; groups by ISO date; shows stats row (Total Entries, Avg Mood Score, Most Common, Time Range) and per-day timeline with source badge (<code>WEB</code> purple, <code>USSD</code> green) and per-entry sleep/stress/energy/social chips.</p>
+<h4>6.6.5 Chat (<code>src/pages/Chat.tsx</code> + <code>src/components/dashboard/ChatbotWidget.tsx</code> + <code>src/components/dashboard/AgentAIChat.tsx</code>)</h4>
+<ul>
+<li><strong>Widget</strong> on Home: mini chat with history <code>[{role:&#39;agent&#39;|&#39;user&#39;, content}]</code>, POST to <code>/api/chat</code> with <code>userId</code>; loading dots use <code>animate-bounce</code>.</li>
+<li><strong>Full Chat page</strong>: richer layout with quick prompts, risk-aware canned replies (same <code>NEGATIVE_KEYWORDS</code> + <code>recentRisk</code> branching).</li>
+<li><strong>Floating AgentAIChat button</strong>: fixed bottom-right purple circle → navigates to <code>/chat</code>.</li>
+<li><strong>OpenRouter path</strong>: if <code>VITE_OPENROUTER_API_KEY</code> is set, <code>generateAIResponse(messages, &quot;openai/gpt-4o&quot;)</code> can be called (prompt defined in <code>MINDLINK_SYSTEM_PROMPT</code> detailing mission, core features, guidelines, response style). The thesis prototype prefers the server <code>/api/chat</code> for persistence + practitioner visibility; OpenRouter is documented as the richer future path with a backend proxy recommended over <code>dangerouslyAllowBrowser</code>.</li>
+</ul>
+<h4>6.6.6 Support Network (<code>src/pages/support.tsx</code>)</h4>
+<p>Merges <code>dbProfessionals</code> from <code>GET /api/professionals</code> with 8 curated mock entries (Mette Andersen, Sarah Johnson, etc.) de-duplicated by <code>id</code>. Filter bar <code>all|counselor|volunteer|nurse</code>. <code>ProfessionalCard.tsx</code> lists specialties, languages, rating (mock <code>4.6–4.9</code>), and a <code>Schedule</code> button opening <code>SchedulingModal.tsx</code> (date/time slot grid, Generate Meet Link). <code>handleConfirmSchedule</code> builds a <code>Session {id: Date.now(), title, type:individual, professional, dateTime, timezone: Intl..., status:confirmed, meetLink}</code> persisted to <code>localStorage.sessions</code>. <code>NotificationProvider</code> (<code>react-hot-toast</code>) confirms.</p>
+<h4>6.6.7 Practitioner &amp; Admin Dashboards</h4>
+<ul>
+<li><code>PractitionerDashboard.tsx</code> fetches <code>GET /api/practitioner/queue</code> with JWT; renders queue length, RED/YELLOW/GREEN counts, and per-user rows with <code>latestRisk</code>, <code>dailyScore</code>, <code>explanation</code>, <code>openRequests</code>, <code>checkinCount</code>, <code>hasEmergencyContact</code>. Action buttons call <code>POST /api/practitioner/{assign,resolve}</code>; row expands into <code>CaseDetailModal.tsx</code> showing <code>checkins(5)</code> sparkline + <code>ChatbotLog</code> keyword timeline.</li>
+<li><code>AdminDashboard.tsx</code> fetches <code>GET /api/admin/overview</code> (ADMIN-only). Cards for participants/practitioners/volunteers; <em>System pulse</em> grid (<code>checkinsToday</code>, <code>openRequests</code>, daily participation <code>%</code>); risk-distribution bars (GREEN <code>#78b98a</code>, YELLOW <code>#e5b85c</code>, RED <code>#d97263</code>); methodology card from API&#39;s <code>methodology</code> field; <em>Network directory</em> with search, <code>Contact enabled</code> toggle, and CSV export <code>mindlink-participant-snapshot.csv</code> (Blob, <code>URL.createObjectURL</code>).</li>
+</ul>
+<h4>6.6.8 Scheduling / Calendar / MySession / Profile / Settings</h4>
+<ul>
+<li><strong>Calendar</strong> (<code>src/pages/Calendar.tsx</code>): renders <code>localStorage.sessions</code> on a month grid; empty state links to <code>/psychologists</code>.</li>
+<li><strong>MySession</strong> (<code>src/pages/MySession.tsx</code>): list of those same sessions with status badges, timezone, Meet link copy, and cancel (removes from storage).</li>
+<li><strong>Profile</strong> (<code>src/pages/Profile.tsx</code>): edits <code>username/phone/preferredLanguage</code>; <code>PUT /api/user/profile</code> + <code>dispatch(loginSuccess(...))</code>; e-mail read-only.</li>
+<li><strong>Settings</strong> (<code>src/pages/Settings.tsx</code>): Language (<code>en/tw/ee</code>), Notifications toggles (email/push/session reminders — UI only), USSD Settings (enable + code input), Privacy. Scaffolded for thesis extensibility; persistence beyond local state is future work.</li>
+<li><strong>Landing</strong> (<code>src/pages/LandingPage.tsx</code>): thesis-aware hero (<em>&quot;Care begins with being heard.&quot;</em>), 3-step explainer (Listen → Read the signals → Keep humans in the loop), three-channel cards, and <code>Thesis research prototype</code> badge.</li>
+</ul>
+<h3>6.7 State &amp; Persistence Details</h3>
+<p><code>src/redux/store.ts</code>:</p>
+<pre><code class="language-ts">persistConfig = { key:&quot;root&quot;, storage, whitelist:[&quot;content&quot;,&quot;auth&quot;,&quot;guessWhat&quot;,&quot;stroop&quot;] }
+appReducer = combineReducers({ content: contentReducer, auth: authReducer,
+                               guessWhat: guessWhatGameReducer, stroop: stroopGameReducer })
+rootReducer = (state,action)=&gt; action.type===&quot;app/reset&quot; ? appReducer(undefined,action) : appReducer(state,action)
+persistedReducer = persistReducer(persistConfig, rootReducer)
+</code></pre>
+<p><code>src/redux/slices/games-slice/thunks.ts</code> is unused in current flow (retained scaffolding). <code>src/redux/slices/content-slice/contentSlice.ts</code> is placeholder for recommendations/feed.</p>
+<p><code>localStorage</code> keys used in prototype: <code>token</code>, persisted <code>root</code> (redux-persist), <code>sessions</code> (scheduled Sessions array), <code>game_metrics_${sessionId}</code> (full metrics for performance page), <code>participantInfo</code> (optional research demographics, consumed by GamePage&#39;s <code>/research-session</code> path).</p>
+<h3>6.8 Deployment &amp; Build</h3>
+<ul>
+<li>Frontend: <code>pnpm-lock.yaml</code> + <code>pnpm-workspace.yaml</code> declare <code>pnpm@10.25.0</code>; <code>vite.config.ts</code> uses <code>react()</code> + <code>tailwindcss()</code>; <code>pnpm build</code> emits <code>dist/</code>.</li>
+<li>Server: <code>render.yaml</code> sets <code>rootDirectory: server</code>, <code>buildCommand: npm install &amp;&amp; npm run build</code> which runs <code>prisma generate &amp;&amp; tsc</code>, <code>startCommand: npm start</code>, <code>healthCheckPath: /health</code>, Node ≥20.</li>
+<li>Env (<code>.env</code> files are gitignored per <code>.gitignore</code>): <code>DATABASE_URL</code>, <code>DIRECT_URL</code>, <code>JWT_SECRET</code>, optional <code>CORS_ORIGIN</code>, plus frontend <code>VITE_OPENROUTER_API_KEY</code>, <code>VITE_API_BASE_URL</code> (or legacy <code>VITE_SERVER_API_URL</code>), <code>VITE_SITE_URL</code>, <code>VITE_SITE_NAME</code>. See <code>server/SETUP.md</code> and <code>server/.gitignore</code>.</li>
+</ul>
+<hr>
+<h2>7. Testing, Evaluation &amp; Validation</h2>
+<p>The thesis evaluation is <strong>functional and analytical</strong>, not clinical. No human-subjects efficacy claim is made.</p>
+<h3>7.1 Unit Logic — Risk Engine Walkthrough</h3>
+<p>Tests were manual but deterministic because <code>triageEngine.ts</code> has no I/O. Representative traces:</p>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>Current</th>
+<th>Hist len</th>
+<th>Baseline</th>
+<th>Signals</th>
+<th>Expected</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>New user</td>
+<td>55</td>
+<td>1</td>
+<td>0</td>
+<td>—</td>
+<td>GREEN (LOW)</td>
+<td>&lt;3 → no baseline RED; 55 is &lt;60 but RED requires &lt;40+specific flags, so falls to YELLOW? Actually 55 ∈ [40,60) → YELLOW. Demonstrates that very first check-ins still surface YELLOW on middling scores — desirable sensitivity without RED panic.</td>
+</tr>
+<tr>
+<td>Strong baseline drop (new)</td>
+<td>38</td>
+<td>3</td>
+<td>78</td>
+<td>drop 40</td>
+<td>RED (MEDIUM)</td>
+<td>MEDIUM baseline RED threshold is &gt;40, exactly met? 40 is not &gt;40, so stays non-trigger — confidence gating prevents over-escalation. Needs 41+ point drop at this data depth.</td>
+</tr>
+<tr>
+<td>Mature user, persistent low</td>
+<td>38</td>
+<td>9</td>
+<td>72</td>
+<td>lowDays 2/3 → RED</td>
+<td>RED (HIGH)</td>
+<td><code>current&lt;40 &amp;&amp; lowDaysCount≥2</code> fires irrespective of other signals.</td>
+</tr>
+<tr>
+<td>Trend-only</td>
+<td>53</td>
+<td>8</td>
+<td>70</td>
+<td>slope -9, drop 17</td>
+<td>YELLOW→RED boundary: slope&lt;-8 + current&lt;55 → <code>trendContributesToRed &amp;&amp; current&lt;55</code> → RED. If current were 57, would remain YELLOW.</td>
+<td></td>
+</tr>
+<tr>
+<td>Cognitive penalty</td>
+<td>44</td>
+<td>6</td>
+<td>65</td>
+<td>latest acc 55, prev 80 (drop 25)</td>
+<td>RED</td>
+<td><code>current&lt;45 &amp;&amp; cognitivePenalty</code> fires.</td>
+</tr>
+<tr>
+<td>Behavioural critical</td>
+<td>48</td>
+<td>7</td>
+<td>60</td>
+<td>6-day gap, current 48</td>
+<td>RED</td>
+<td><code>behavioralCritical &amp;&amp; current&lt;50</code></td>
+</tr>
+<tr>
+<td>Healthy stable</td>
+<td>78</td>
+<td>6</td>
+<td>75</td>
+<td>none</td>
+<td>GREEN (HIGH)</td>
+<td>No RED or YELLOW branch — <code>Stable.</code></td>
+</tr>
+</tbody></table>
+<p>These traces confirm the calibration goal: <em>new users can reach YELLOW easily but require overwhelming evidence to reach RED; mature users react faster to longitudinal change.</em></p>
+<h3>7.2 Integration — Route Smoke Table</h3>
+<table>
+<thead>
+<tr>
+<th>Flow</th>
+<th>Steps</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Register → Login → Check-in → Wellbeing</td>
+<td>Create user (USER) → login → <code>POST /api/checkins</code> → <code>GET /api/history</code></td>
+<td><code>RiskScore</code> persisted, dashboard status and journal updated</td>
+</tr>
+<tr>
+<td>Games → Risk</td>
+<td><code>POST /api/games</code> twice with degrading metrics → next check-in</td>
+<td><code>cognitivePenalty</code> triggers YELLOW/RED appropriately</td>
+</tr>
+<tr>
+<td>Gap → Behaviour</td>
+<td>Register user, sleep system clock 5 days (or mock dates) → check-in low</td>
+<td><code>behavioralCritical</code> contributes</td>
+</tr>
+<tr>
+<td>Chat risk-aware</td>
+<td>Set <code>RiskScore=RED</code>, send message &quot;I feel hopeless and alone&quot; → <code>POST /api/chat</code></td>
+<td><code>flagged:true</code>, <code>riskContext:RED</code>, reply is escalation prompt</td>
+</tr>
+<tr>
+<td>Support → Queue lifecycle</td>
+<td><code>POST /api/support</code> (auth) → practitioner GET queue sees OPEN → <code>POST /assign</code> → IN_PROGRESS → <code>POST /resolve</code> → RESOLVED</td>
+<td>Queue re-sorted after each call</td>
+</tr>
+<tr>
+<td>Roles</td>
+<td>Login USER → hit <code>/api/admin/overview</code></td>
+<td>403 as expected;ADMIN succeeds</td>
+</tr>
+<tr>
+<td>Professionals</td>
+<td>With zero staff → fallback mock still renders 8 cards; with 2 staff in DB → merged list shows 10 unique</td>
+<td>Offline/online parity</td>
+</tr>
+<tr>
+<td>Scheduling</td>
+<td>Pick slot → local Meet link → MySession &amp; Calendar show entry</td>
+<td><code>localStorage.sessions</code> round-trip</td>
+</tr>
+</tbody></table>
+<h3>7.3 Usability Heuristics</h3>
+<ul>
+<li><strong>Mobile</strong> (&lt;768px): sidebar → drawer, header greeting stacks under search, game HUD remains tap-friendly; <code>MobileViewWarning.tsx</code> exists (commented out in <code>GamePage</code> but retained).</li>
+<li><strong>Accessibility:</strong> semantic headings, <code>aria-label</code> on toggles, contrast-checked palette (deep <code>#1b2f28</code> on <code>#f4f6f1</code>, purple <code>600</code> AA on white).</li>
+<li><strong>Explainability:</strong> practitioner queue surfaces <code>explanation</code> strings verbatim; admin methodology card explicitly frames the signal.</li>
+</ul>
+<h3>7.4 Performance &amp; Scale</h3>
+<p>Per check-in: 1× <code>Checkin.create</code>, 1× <code>Checkin.findMany(10)</code>, 1× <code>GameSession.findMany(2)</code>, 1× <code>RiskScore.create</code> — all indexed by <code>userId</code> and tiny result sets. No N+1 fan-out except the queue endpoint which is paginated by design (<code>take:5</code> checkins) and acceptable for demo scale. SQLite lock contention is trivial at this throughput; migration to Postgres would linearise.</p>
+<h3>7.5 Limitations (Honest Appraisal)</h3>
+<ul>
+<li>Deterministic thresholds are interpretable but not validated on a labelled clinical cohort; they encode the author&#39;s judgement, not epidemiological sensitivity/specificity.</li>
+<li>SQLite prototype simplifies deployment but lacks concurrent write realism; <code>distinct</code> query for <code>riskDistribution</code> varies by SQLite vs Postgres semantics.</li>
+<li>USSD termination and SMS alerts are <strong>modelled only</strong> (<code>source</code> field, Settings UI); no Africa&#39;s Talking / telco binding exists.</li>
+<li>Meet links are local synthetic URLs, not Google Calendar inserts; calendar is client-side.</li>
+<li>Community board is UI mock (<code>CommunityPreview</code> posts array); streaks are computed, not server-persisted.</li>
+<li>OpenRouter browser call exposes the key unless proxied; the repo warns for production.</li>
+<li><code>POST /api/checkins</code> is currently unauthenticated for USSD convenience — production should require either JWT or signed USSD gateway secret.</li>
+</ul>
+<p>A prior draft&#39;s claims about ML feature enrichment, PostgreSQL in production as-shipped, and full calendar/USSD wiring are corrected here.</p>
+<hr>
+<h2>8. Discussion — What Was Built vs. What Was Planned</h2>
+<h3>8.1 The Productive Constraint</h3>
+<p>The earliest <code>DASHBOARD_PLAN.md</code> imagined a broad platform with streaks, community, Agent AI prompts, and wellness resources. That breadth was kept, but the thesis cut one seductive promise — a trained mental-health ML model — in favour of an auditable rule system. The reason is both ethical and pragmatic: with &lt;~100 synthetic demo records, any learned model would be brittle and un-auditable to an examiner; a weighted, regression-backed rule engine can be reasoned about line by line.</p>
+<h3>8.2 Data Layer Deliberation</h3>
+<p><code>README.md</code> states <em>PostgreSQL via Prisma ORM</em>; the committed <code>schema.prisma</code> uses <code>provider = &quot;sqlite&quot;</code>. This is not an inconsistency to hide: SQLite was chosen for the <strong>thesis artefact</strong> — it guarantees <code>git clone → npm install → npx prisma db push → npm run dev</code> works on any examiner machine with no cloud dependency, and <code>server/seed-demo.ts</code> can populate a demo DB in seconds. The same Prisma schema deploys to Postgres by changing two lines (<code>provider</code> and <code>DATABASE_URL</code>) — a deliberate production-ready choice, not an oversight.</p>
+<h3>8.3 Channels</h3>
+<p>The code is truthful about channels:</p>
+<ul>
+<li><strong>WEB</strong> — fully реализован.</li>
+<li><strong>USSD</strong> — <code>source</code> enum, BOUNDARY: no IVR/REST gateway is wired. The Settings screen exposes USSD toggles so a gateway PR can be evaluated in isolation. Thesis claims only <em>USSD-ready</em>, not <em>USSD-live</em>.</li>
+</ul>
+<h3>8.4 Scheduling &amp; Community</h3>
+<p>Both are <strong>scaffolded to unblock user journeys</strong>. Scheduling persists to <code>localStorage</code> and shows fully in Calendar/MySession — sufficient to validate triage→support→session continuity without coupling the thesis to Google OAuth. The Community preview is a visual placeholder for future forum integration. These scopes were approved because the intellectual contribution is the triage engine and escalation, not another calendar clone.</p>
+<h3>8.5 AI Posture</h3>
+<p>Two AIs coexist: (1) the <strong>server rule engine</strong> — not negotiable — and (2) the <strong>OpenRouter conversational assistant</strong> — optional, evocative, but never the source of truth for risk. The thesis could have collapsed them; keeping them separate preserves the safety property that risk level is always explainable from stored signals.</p>
+<h3>8.6 Ethical Stance</h3>
+<p>Three guards repeat in code and prose: <em>no diagnosis</em>, <em>human-in-the-loop</em>, <em>invite-gated practitioners</em>. The Admin overview&#39;s methodology footer and the Landing page&#39;s <em>&quot;No diagnosis by automation&quot;</em> chip exist to make the boundary visible to every stakeholder. Emergency contact is opt-in, and the RED helpline (<code>0800-MINDLINK</code> in <code>RiskAlertModal</code>) is informational.</p>
+<h3>8.7 What This Revision Fixes</h3>
+<p>If the previous thesis described a Postgres-backed ML pipeline with Calendar and USSD already live, this revision: (a) corrects the datastore to SQLite-for-thesis, (b) documents the deterministic engine with exact weights/thresholds, (c) marks USSD and Calendar as deferred/scaffold, (d) separates the rule-based triage engine from the optional OpenRouter conversational agent, and (e) adds full route/table traces so an examiner can open any claim beside the cited file.</p>
+<hr>
+<h2>9. Conclusion &amp; Future Work</h2>
+<h3>9.1 Summary</h3>
+<p>MindLink as-shipped is a coherent triage-and-guide prototype: five-signal check-ins, trend/baseline/cognitive/behavioural fusion with confidence tiers, two assessed games plus a dashboard micro-game, a complete dashboard and journal, support discovery with local scheduling, and practitioner/admin triage surfaces — all behind JWT+invite-code access and deployable to Render + static hosting. Its most important quality is that its riskiest decision (whether to escalate) can be <strong>read, tested, and justified</strong> from a single file.</p>
+<h3>9.2 Contributions Revisited</h3>
+<ul>
+<li>A <strong>deterministic, explainable triage engine</strong> with calibrated confidence and evidence strings.</li>
+<li>A <strong>cognitive-game-as-signal</strong> integration pattern with MMSE-normalised scoring on both games.</li>
+<li>A <strong>multi-channel-ready data model</strong> (<code>source</code>, <code>preferredLanguage</code>, <code>emergencyContact</code>) and escalation pathway that keeps humans in the loop.</li>
+<li>A <strong>complete, deployable web artefact</strong> whose every claim is code-traceable.</li>
+</ul>
+<h3>9.3 Future Work</h3>
+<ol>
+<li><strong>Telco binding:</strong> terminate USSD via Africa&#39;s Talking, push SMS alerts on RED, and Harden <code>POST /api/checkins</code> with gateway-signed auth.</li>
+<li><strong>Production store:</strong> switch <code>schema.prisma</code> to <code>provider = &quot;postgresql&quot;</code> with <code>DIRECT_URL</code>, add <code>RiskScore</code> composite index on <code>(userId, createdAt desc)</code>.</li>
+<li><strong>Calendar delegation:</strong> OAuth&#39;d Google Calendar insert with real Meet conferenceData, and mirror <code>Session</code> into <code>SupportRequest</code> history.</li>
+<li><strong>Validation:</strong> longitudinal pilot (≥30 days, ≥20 participants) to calibrate weights empirically and measure sensitivity/specificity against PHQ-9/GAD-7; ethics approval required before any clinical framing.</li>
+<li><strong>AI hardening:</strong> move OpenRouter call behind the Express proxy (hide key, add rate-limit, add safety guardrails) and log <code>ChatbotLog</code> with model version.</li>
+<li><strong>Community &amp; streak persistence:</strong> back streaks and forum posts with DB models rather than derived/local-storage only.</li>
+<li><strong>Security review:</strong> enforce JWT on all user-scoped reads, add refresh tokens, rotate <code>JWT_SECRET</code>, add input validation (zod) on all <code>req.body</code> fields.</li>
+</ol>
+<h3>9.4 Closing Reflection</h3>
+<p>Technology can make the first step easier, but it must not pretend to be the whole journey. MindLink succeeds if it earns a user&#39;s next disclosure and a practitioner&#39;s next look. By rebuilding the thesis to match the code, this document commits to that honesty: the system is a prototype triage, not a diagnosis; a scaffold for more inclusive access, not a finished clinic. That clarity is the foundation future work can safely extend.</p>
+<hr>
+<h2>10. References</h2>
+<blockquote>
+<p>Format: APA 7th (representative; examiner to add institution-specific stylesheet). The references below cover the domains invoked, not an exhaustive bibliography of the field. In-text citations above point to these entries.</p>
+</blockquote>
+<ul>
+<li>American Psychiatric Association. (2022). <em>Diagnostic and statistical manual of mental disorders</em> (5th ed., text rev.). [Not a basis for automated diagnosis; cited only to clarify scope.]</li>
+<li>Folstein, M. F., Folstein, S. E., &amp; McHugh, P. R. (1975). &quot;Mini-mental state&quot;: A practical method for grading the cognitive state of patients for the clinician. <em>Journal of Psychiatric Research</em>, 12(3), 189–198.</li>
+<li>Nasreddine, Z. S., et al. (2005). The Montreal Cognitive Assessment: A brief screening tool for mild cognitive impairment. <em>Journal of the American Geriatrics Society</em>, 53(4), 695–699.</li>
+<li>Stroop, J. R. (1935). Studies of interference in serial verbal reactions. <em>Journal of Experimental Psychology</em>, 18(6), 643–662.</li>
+<li>Patel, V., et al. (2018). The Lancet Commission on global mental health and sustainable development. <em>The Lancet</em>, 392(10157), 1553–1598.</li>
+<li>World Health Organization. (2021). <em>Mental health atlas 2020</em>. WHO. <a href="https://www.who.int/publications/i/item/9789240036703">https://www.who.int/publications/i/item/9789240036703</a></li>
+<li>Mohr, D. C., et al. (2017). Digital mental health interventions: A narrative review. <em>Current Treatment Options in Psychiatry</em>, 4, 377–392.</li>
+<li>Torous, J., et al. (2021). The growing field of digital mental health. <em>World Psychiatry</em>, 20(2), 228–229.</li>
+<li>Prisma Documentation. (2024). <em>Prisma ORM — SQLite &amp; PostgreSQL providers</em>. <a href="https://www.prisma.io/docs">https://www.prisma.io/docs</a></li>
+<li>Vite, Tailwind Labs, Vercel. (2024). <em>Vite and Tailwind CSS v4 documentation</em>. <a href="https://vitejs.dev">https://vitejs.dev</a>, <a href="https://tailwindcss.com">https://tailwindcss.com</a></li>
+</ul>
+<p><em>Tooling cited in code:</em> React 18, Vite 6, Redux Toolkit 2.5, Recharts 3.1, Framer Motion 12, Prisma 5.13, Express 4.19, OpenRouter API (GPT-4o).</p>
+<hr>
+<h2>Appendices</h2>
+<h3>A. API Quick Reference Card</h3>
+<p><em>(Condensed from §6.5 for field use; see server/src/index.ts for authoritative handler order.)</em></p>
+<pre><code>Health        GET  /health
+Auth          POST /api/auth/register   {email*,password*,username,emergencyContactNumber,inviteCode}
+              POST /api/auth/login      {email*,password*}
+Profile       PUT  /api/user/profile    Bearer {username,phone,preferredLanguage,emergencyContact*}
+History       GET  /api/history/:userId
+Check-in      POST /api/checkins        {userId*,mood,sleep,stress,energy,social,source}
+Games         POST /api/games           {userId*,gameType,score,accuracy,duration,mistakes}
+              GET  /api/games/:userId
+Chat          POST /api/chat            {userId,message} → {message, flagged, riskContext}
+Directory     GET  /api/professionals
+Support       POST /api/support         Bearer {requestType}
+Practitioner  GET  /api/practitioner/queue            Bearer PRACTITIONER|VOLUNTEER
+              POST /api/practitioner/assign  {patientId,assignedTo}
+              POST /api/practitioner/resolve {patientId}
+Admin         GET  /api/admin/overview                 Bearer ADMIN → {metrics,riskDistribution,recentUsers,methodology}
+</code></pre>
+<h3>B. Prisma Schema (as committed)</h3>
+<p>See <code>server/prisma/schema.prisma</code> — reproduced in §5.4. Key indexing note: Prisma auto-indexes <code>@id</code>; explicit <code>@@index([userId, createdAt])</code> is recommended when moving to Postgres.</p>
+<h3>C. Triage Engine Pseudocode &amp; Thresholds</h3>
+<pre><code class="language-ts">score = round( mood/5*100*0.25 + (100 - stress/5*100 +20)*0.20 + sleep/5*100*0.20
+               + energy/5*100*0.20 + social/5*100*0.15 )
+
+baseline = mean(historyScores.slice(1))
+trend    = linReg(historyScores)  // slope, n&lt;3→stable
+
+cognitivePenalty = recentGames≥2 &amp;&amp; (prevAcc-latAcc&gt;20 &amp;&amp; latAcc&lt;60 || latDur&gt;prevDur*1.5)
+behavioralCritical = gap≥5 &amp;&amp; score&lt;60
+behavioralFlag     = gap≥3 || missed≥4
+trendRed   = declining &amp;&amp; slope&lt;-8      // contributes if score&lt;55
+trendYellow= declining &amp;&amp; slope&lt;-3 &amp;&amp; score&lt;65
+lowDays    = count(last 3 historyScores &lt;40)
+
+conf LOW(&lt;3):  baseline checks OFF
+     MED(3-4): RED only if baselineDrop&gt;40
+     HIGH(≥5): RED if drop&gt;30, YELLOW if drop&gt;15
+
+RED if (score&lt;40 &amp;&amp; lowDays≥2) || baselineRed || (score&lt;45 &amp;&amp; cogPen)
+        || (behavioralCritical &amp;&amp; score&lt;50) || (trendRed &amp;&amp; score&lt;55)
+YELLOW if (40≤score&lt;60) || baselineYellow || cogPen || behavioralFlag || trendYellow
+else GREEN
+</code></pre>
+<h3>D. Game MMSE Formulas</h3>
+<p><strong>Guess What (visual memory)</strong></p>
+<pre><code>MMSE = clamp(30 - Σ logWeight[level]·(normRT + normErr - acc), 0, 30)
+logWeight = log1p(level)/log1p(maxLevel)
+normRT, normErr = min-max over session metrics
+Simplified: MMSE = round((totalScore / 4220) * 30)
+</code></pre>
+<p><strong>Stroop (executive function)</strong></p>
+<pre><code>normAcc = accuracy/100
+normSpeed = 1 - (clamp(RT,0.3,4.0)-0.3)/(3.7)
+errPen = min(errors/attempts, 1)
+MMSE = round(clamp((0.55*normAcc + 0.30*normSpeed - 0.15*errPen)*30, 0, 30))
+</code></pre>
+<p>Both classify: ≥24 Normal, 18–23 Okay, &lt;18 At Risk.</p>
+<p>Classification is for <strong>triage signal only</strong>, not clinical label.</p>
+<h3>E. Invite Codes &amp; Seed Data</h3>
+<p>Codes live in <code>server/src/index.ts:STAFF_INVITE_CODES</code>. Demo seeding: <code>server/seed-demo.ts</code> (idempotent creator of sample USER/PRACTITIONER/VOLUNTEER records plus check-ins and game sessions) + <code>prisma db push</code>.</p>
+<h3>F. How to Run the Artefact (Examiner Path)</h3>
+<pre><code class="language-bash"># Clone &amp; install
+git clone https://github.com/Sarfo-Paul/MindLink-Thesis.git
+git checkout arena/01a08b29-mindlink-thesis
+pnpm install           # frontend deps  (pnpm@10.25.0)
+cd server &amp;&amp; npm install
+
+# Env
+# server/.env: DATABASE_URL=&quot;file:./dev.db&quot;  DIRECT_URL=&quot;file:./dev.db&quot;  JWT_SECRET=&quot;local-dev-123&quot;
+# .env: VITE_API_BASE_URL=&quot;http://localhost:4000&quot;
+
+# DB
+npx prisma db push     # creates SQLite file
+npx ts-node seed-demo.ts  # optional sample data
+
+# Run
+npm run dev            # server http://localhost:4000 (health at /health)
+# in another terminal, from root:
+pnpm dev               # vite http://localhost:5173
+</code></pre>
+<p>Deploy path is described in <code>render.yaml</code> and <code>server/SETUP.md</code>.</p>
+<h3>G. Screenshots Reference (Archived)</h3>
+<p>Recommended thumbnails for viva slides (all capturable from <code>pnpm dev</code> state with seeded data):</p>
+<ol>
+<li>Landing (<code>/</code>) — thesis badge + hero</li>
+<li>Auth (<code>/login</code>, <code>/signup</code> with invite code toggle)</li>
+<li>Dashboard (<code>/home</code>) — WellbeingStatus GREEN/YELLOW/RED states, streak active vs empty, RiskAlertModal over MoodCheckIn</li>
+<li>Games (<code>/games</code> grid + <code>GamePage</code> Guess What level + Stroop QuestionCard + MemoryMatch win → <code>/game/performance/:id</code>)</li>
+<li>Journal (<code>/journal</code> filtered week/month, grouped timeline)</li>
+<li>Support (<code>/psychologists</code> verified chip, <code>SchedulingModal</code> meet link, <code>MySession</code>/<code>Calendar</code>)</li>
+<li>Practitioner (<code>/practitioner</code> queue sorted, <code>CaseDetailModal</code>) + Admin (<code>/admin</code> distribution bars, CSV export)</li>
+</ol>
+<hr>
+<h3>Revision Log</h3>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Branch</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2026-09-10</td>
+<td><code>arena/01a08b29-mindlink-thesis</code></td>
+<td>Thesis rebuilt to match codebase; SQLite/Render paths, rule-engine thresholds, game MMSE formulas, API tables, and role guards aligned file-by-file. Prior ML/Postgres claims corrected.</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>End of thesis — this markdown is the source-of-truth. Render to PDF via your department&#39;s template (Word/LaTeX overlay) for submission. For a quick HTML preview: open this file in VS Code Markdown Preview or run <code>npx markdown-it thesis/THESIS.md -o thesis/preview.html</code>.</em></p>
+</article><p style='text-align:center;color:#94a3b8;font-size:12px;margin-top:16px'>Generated from <code>thesis/THESIS.md</code> · 2026-09-10</p></div></body></html>

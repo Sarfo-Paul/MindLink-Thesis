@@ -1,0 +1,25 @@
+RequirementID,Requirement,File/Route,Status,Notes
+FR1,Five-signal daily check-in (WEB/USSD),server/prisma/schema.prisma:Checkin.source; src/components/dashboard/MoodCheckInModal.tsx; POST /api/checkins,Built,source field USSD-ready; UI 5-step wizard
+FR2,Daily 0-100 score + RiskScore persistence,server/src/services/triageEngine.ts:calculateDailyScore; server/src/index.ts POST /api/checkins,Built,weights 25/20/20/20/15 verified
+FR3,Trend + baseline + confidence tiers,server/src/services/triageEngine.ts:detectTrend/calculateBaseline/classifyRisk,Built,LR over 10; thresholds LOW<3 MED 3-4 HIGH>=5
+FR4,Behavioural signals (gap + missed week),server/src/services/triageEngine.ts:BehavioralInput; server/src/index.ts behavioral derivation,Built,daysSinceLastCheckin floor days; missedDays 7-day set
+FR5,Cognitive signals from last 2 games,server/src/services/triageEngine.ts cognitivePenalty; server/src/index.ts recentGames take 2,Built,acc drop >20 + <60 OR duration 1.5x
+FR6,Explainable output level+explanation+confidence,server/src/services/triageEngine.ts RiskResult; RiskScore model,Built,explanationParts.join
+FR7,Escalation pathway (alert->chat->support->queue),src/components/dashboard/RiskAlertModal.tsx; POST /api/support; GET /api/practitioner/queue + assign/resolve,Built,crisis helpline at RED
+FR8,Cognitive games persisted as GameSession,src/components/games/GuessWhatGame/*; StroopGame/*; POST /api/games; GET /api/games/:userId; MemoryMatchGame.tsx,Built,GuessWhat 10 levels + Stroop timed; MMSE normalised
+FR9,Dashboard Home layout,src/components/dashboard/Home.tsx + WellbeingStatus + MoodTrendChart + StreakTracker + CognitiveGames + ChatbotWidget,Built,12-col 2-row grid as in DASHBOARD_PLAN.md
+FR10,Journal timeline with filter,src/pages/Journal.tsx + GET /api/history/:userId,Built,scoreToMood mapping; week/month/all + grouped by day
+FR11,Professional directory + scheduling with Meet link,src/pages/support.tsx + ProfessionalCard + SchedulingModal + GET /api/professionals,Built,DB+mock merge; localStorage.sessions Meet link
+FR12,Practitioner queue + assign/resolve,src/components/practitioner/PractitionerDashboard.tsx + GET /api/practitioner/queue,Built,sorted RED>YELLOW>GREEN + openRequests; role guard
+FR13,Admin overview + export,src/components/admin/AdminDashboard.tsx + GET /api/admin/overview,Built,metrics + riskDistribution + methodology + CSV export
+FR14,JWT 7d auth + invite-code roles,server/src/index.ts STAFF_INVITE_CODES; POST /api/auth/{register,login}; src/redux/slices/auth-slice/authSlice.ts; RoleRoute,Built,codes MINDLINK-*-2024; bcrypt 10
+FR15,Chat keyword-aware + OpenRouter optional,server/src/index.ts POST /api/chat NEGATIVE_KEYWORDS; src/components/chatagent/openRouterClient.ts MINDLINK_SYSTEM_PROMPT gpt-4o,Built,server rule is source of truth
+FR16,Calendar MySession Profile Settings,src/pages/Calendar.tsx MySession.tsx Profile.tsx Settings.tsx + DashboardLayout/Header/Sidebar,Built,calendar reads localStorage.sessions; USSD scaffold in Settings
+NFR1,Mobile responsive,Tailwind v4; DashboardLayout + Sidebar drawer; Game canvas,Built,collapses <768px
+NFR2,Build & deploy,Vite 6; render.yaml build prisma generate && tsc; /health probe,Built,
+NFR3,SQLite thesis Postgres-ready,server/prisma/schema.prisma provider sqlite; comment for pg switch,Built,seed-demo.ts
+NFR4,Explainability,RiskScore.explanation stored; practitioner queue shows it; admin methodology footer,Built,
+Deferred,Live USSD gateway Africa's Talking,NOT WIRED — scaffold only source field + Settings toggle,Roadmap,Future POST from gateway
+Deferred,Google Calendar/Meet OAuth,NOT WIRED — SchedulingModal generates link locally + localStorage,Roadmap,
+Deferred,Community board persistence,src/components/dashboard/CommunityPreview mock only,Roadmap,
+Deferred,Trained ML model,Intentionally NOT BUILT — rule engine chosen,Rationale in thesis Ch 3/8,
