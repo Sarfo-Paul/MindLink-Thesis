@@ -3,15 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
-
-enum Role {
-  USER
-  PRACTITIONER
-  VOLUNTEER
 }
 
 model User {
@@ -20,7 +13,7 @@ model User {
   email                   String?           @unique
   username                String?
   passwordHash            String?
-  role                    Role              @default(USER)
+  role                    String            @default("USER")
   preferredLanguage       String            @default("en")
   emergencyContactEnabled Boolean           @default(false)
   emergencyContactNumber  String?

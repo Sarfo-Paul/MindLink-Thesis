@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { type RootState } from "../../redux/store";
 import axios from "axios";
 import { apiUrl } from "../../config/api";
@@ -34,6 +35,10 @@ export function Home() {
 
   return (
     <div className="space-y-6 pb-10">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#dfe8e2] bg-white px-5 py-4 shadow-sm">
+        <div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#82958a]">Your care space</p><p className="mt-1 text-sm text-[#53675d]">Choose a small next step that feels manageable today.</p></div>
+        <div className="flex flex-wrap gap-2"><Link to="/journal" className="rounded-lg bg-[#e4f1ec] px-3 py-2 text-xs font-semibold text-[#1f5c49]">Write reflection</Link><Link to="/calendar" className="rounded-lg bg-[#f6eadf] px-3 py-2 text-xs font-semibold text-[#9a5b2d]">View sessions</Link><Link to="/psychologists" className="rounded-lg bg-[#e4eafa] px-3 py-2 text-xs font-semibold text-[#3f568e]">Find support</Link></div>
+      </div>
       {/*
         Layout (desktop):
         ┌─────────────────────────────┬──────────────────────────┐

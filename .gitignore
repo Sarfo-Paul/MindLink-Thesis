@@ -28,6 +28,7 @@ server/package-lock.json
 # ── Prisma generated client ───────────────────────────────────────────────────
 server/src/generated/
 server/prisma/generated/
+server/prisma/*.db
 # Keep: schema.prisma and migrations are source-of-truth
 
 # ── Logs ─────────────────────────────────────────────────────────────────────

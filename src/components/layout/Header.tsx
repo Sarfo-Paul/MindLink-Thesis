@@ -58,6 +58,7 @@ export function Header({ userName, onMobileMenuToggle }: HeaderProps) {
           </div>
         )}
         <div className="flex items-center gap-4">
+          {user?.role && user.role !== "USER" && <span className="hidden rounded-full bg-[#e4f1ec] px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#1f5c49] sm:inline-block">{user.role.toLowerCase()}</span>}
           {!isChat && (
             <>
               <div className="relative max-w-md w-full">

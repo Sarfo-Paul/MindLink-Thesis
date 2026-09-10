@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store";
 import { apiUrl } from "../../config/api";
 import { CaseDetailModal } from "./CaseDetailModal";
 
@@ -8,6 +10,9 @@ export function PractitionerDashboard() {
   const [queue, setQueue] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCase, setSelectedCase] = useState<any | null>(null);
+  const [riskFilter, setRiskFilter] = useState("ALL");
+  const [search, setSearch] = useState("");
+  const user = useSelector((state: RootState) => state.auth?.user);
 
   useEffect(() => {
     async function loadQueue() {
@@ -44,6 +49,15 @@ export function PractitionerDashboard() {
   };
 
   const riskCount = (level: string) => queue.filter(q => q.latestRisk === level).length;
+  const visibleQueue = queue.filter((item) => {
+    const matchesRisk = riskFilter === "ALL" || item.latestRisk === riskFilter;
+    const matchesSearch = !search || `${item.username || ""} ${item.userId}`.toLowerCase().includes(search.toLowerCase());
+    return matchesRisk && matchesSearch;
+  });
+  const refreshQueue = () => {
+    setLoading(true);
+    window.location.reload();
+  };
 
   return (
     <>
@@ -56,9 +70,9 @@ export function PractitionerDashboard() {
               <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h1 className="text-2xl font-bold text-gray-900">Practitioner Triage Queue</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{user?.role === "VOLUNTEER" ? "Volunteer Support Queue" : "Practitioner Triage Queue"}</h1>
             </div>
-            <p className="text-sm text-gray-500 mt-1">Anonymised user risk data, sorted by severity. Click <strong>Review</strong> to open the case detail.</p>
+            <p className="text-sm text-gray-500 mt-1">Anonymised wellbeing signals sorted by urgency. Review a case before assigning or responding.</p>
           </div>
 
           {/* Summary stats */}
@@ -82,6 +96,12 @@ export function PractitionerDashboard() {
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-4">
+                <div className="flex flex-wrap gap-2">
+                  {["ALL", "RED", "YELLOW", "GREEN"].map((filter) => <button key={filter} onClick={() => setRiskFilter(filter)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${riskFilter === filter ? "bg-purple-700 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>{filter === "ALL" ? "All cases" : filter}</button>)}
+                </div>
+                <div className="flex gap-2"><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search cases" className="w-40 rounded-lg border border-gray-200 px-3 py-2 text-xs outline-none focus:border-purple-400" /><button onClick={refreshQueue} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50">Refresh</button></div>
+              </div>
               <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 <div className="col-span-4">User</div>
                 <div className="col-span-2">Risk</div>
@@ -90,7 +110,7 @@ export function PractitionerDashboard() {
                 <div className="col-span-2 text-right">Action</div>
               </div>
 
-              {queue.map((item, i) => (
+              {visibleQueue.map((item, i) => (
                 <motion.div
                   key={item.userId}
                   initial={{ opacity: 0, y: 8 }}
@@ -147,9 +167,9 @@ export function PractitionerDashboard() {
                 </motion.div>
               ))}
 
-              {queue.length === 0 && (
+              {visibleQueue.length === 0 && (
                 <div className="px-6 py-12 text-center text-gray-400 text-sm">
-                  No users in the queue yet.
+                  No cases match this view.
                 </div>
               )}
             </div>

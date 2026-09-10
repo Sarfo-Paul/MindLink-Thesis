@@ -17,6 +17,8 @@ import { Settings } from "./pages/Settings";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { PractitionerDashboard } from "./components/practitioner/PractitionerDashboard";
+import { AdminDashboard } from "./components/admin/AdminDashboard";
+import { LandingPage } from "./pages/LandingPage";
 
 function App() {
   const { user } = useSelector((state: RootState) => state.auth!);
@@ -27,7 +29,7 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/" element={<LandingPage />} />
 
         {/* Protected dashboard routes */}
         <Route path="/home" element={
@@ -89,6 +91,12 @@ function App() {
         <Route path="/volunteer" element={
           <RoleRoute allowedRoles={["VOLUNTEER"]}>
             <DashboardLayout><PractitionerDashboard /></DashboardLayout>
+          </RoleRoute>
+        } />
+
+        <Route path="/admin" element={
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <DashboardLayout><AdminDashboard /></DashboardLayout>
           </RoleRoute>
         } />
 

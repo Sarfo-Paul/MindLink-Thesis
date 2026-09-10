@@ -1,7 +1,7 @@
 const RENDER_API = "https://mindlink-ti7t.onrender.com";
 
 /** Local dev default when .env omits override */
-const DEV_FALLBACK = "https://mindlink-ti7t.onrender.com";
+const DEV_FALLBACK = "http://localhost:4000";
 
 function resolveApiBase(): string {
   const raw = import.meta.env.VITE_API_BASE_URL?.trim();

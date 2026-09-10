@@ -46,6 +46,7 @@ export function Signup() {
       // Role-based redirect after signup
       if (user.role === "PRACTITIONER") navigate("/practitioner");
       else if (user.role === "VOLUNTEER") navigate("/volunteer");
+      else if (user.role === "ADMIN") navigate("/admin");
       else navigate("/home");
     } catch (err: any) {
       const msg = err.response?.data?.error || "Registration failed. Try again.";

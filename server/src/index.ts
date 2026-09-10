@@ -12,11 +12,30 @@ const app = express();
 const port = process.env.PORT || 4000;
 const JWT_SECRET = process.env.JWT_SECRET || 'mindlink-dev-secret-change-in-production';
 
-const corsOrigins = process.env.CORS_ORIGIN?.trim();
-const corsOptions: cors.CorsOptions =
-  corsOrigins && corsOrigins !== '*'
-    ? { origin: corsOrigins.split(',').map((o) => o.trim()).filter(Boolean) }
-    : { origin: true };
+const corsOrigins = (process.env.CORS_ORIGIN ?? '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const isLocalOrigin = (origin: string) => /^(https?:\/\/)(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    if (corsOrigins.includes(origin) || isLocalOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(null, true);
+  },
+  credentials: true,
+};
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -27,9 +46,10 @@ app.get('/health', (req, res) => {
 // ─── AUTH ────────────────────────────────────────────────────────────────────
 
 // Staff invite codes — in production store these in DB and invalidate after use
-const STAFF_INVITE_CODES: Record<string, 'PRACTITIONER' | 'VOLUNTEER'> = {
+const STAFF_INVITE_CODES: Record<string, 'PRACTITIONER' | 'VOLUNTEER' | 'ADMIN'> = {
   'MINDLINK-PRACTITIONER-2024': 'PRACTITIONER',
   'MINDLINK-VOLUNTEER-2024':    'VOLUNTEER',
+  'MINDLINK-ADMIN-2024':         'ADMIN',
 };
 
 app.post('/api/auth/register', async (req, res) => {
@@ -44,7 +64,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Determine role from invite code
-    let role: 'USER' | 'PRACTITIONER' | 'VOLUNTEER' = 'USER';
+    let role: 'USER' | 'PRACTITIONER' | 'VOLUNTEER' | 'ADMIN' = 'USER';
     if (inviteCode) {
       const mapped = STAFF_INVITE_CODES[inviteCode.trim().toUpperCase()];
       if (!mapped) return res.status(400).json({ error: 'Invalid invite code' });
@@ -319,6 +339,44 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // ─── PRACTITIONER ────────────────────────────────────────────────────────────
+
+app.get('/api/admin/overview', requireAuth, requireRole('ADMIN'), async (_req, res) => {
+  try {
+    const [totalUsers, totalPractitioners, totalVolunteers, openRequests, checkinsToday, riskScores] = await Promise.all([
+      prisma.user.count({ where: { role: 'USER' } }),
+      prisma.user.count({ where: { role: 'PRACTITIONER' } }),
+      prisma.user.count({ where: { role: 'VOLUNTEER' } }),
+      prisma.supportRequest.count({ where: { status: { in: ['OPEN', 'IN_PROGRESS'] } } }),
+      prisma.checkin.count({ where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } }),
+      prisma.riskScore.findMany({ orderBy: { createdAt: 'desc' }, distinct: ['userId'], select: { riskLevel: true } }),
+    ]);
+
+    const recentUsers = await prisma.user.findMany({
+      where: { role: 'USER' },
+      orderBy: { createdAt: 'desc' },
+      take: 8,
+      select: { id: true, username: true, email: true, preferredLanguage: true, createdAt: true, emergencyContactEnabled: true },
+    });
+
+    const riskDistribution = riskScores.reduce<Record<string, number>>((counts, item) => {
+      counts[item.riskLevel] = (counts[item.riskLevel] || 0) + 1;
+      return counts;
+    }, { GREEN: 0, YELLOW: 0, RED: 0 });
+
+    return res.json({
+      metrics: { totalUsers, totalPractitioners, totalVolunteers, openRequests, checkinsToday },
+      riskDistribution,
+      recentUsers,
+      methodology: {
+        title: 'Explainable triage monitoring',
+        body: 'Risk levels combine self-reported wellbeing, longitudinal trends, cognitive game signals and missed check-ins. They support human review; they are not a diagnosis.',
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Failed to load admin overview' });
+  }
+});
 
 app.get('/api/practitioner/queue', requireAuth, requireRole('PRACTITIONER', 'VOLUNTEER'), async (req, res) => {
   try {
