@@ -238,6 +238,8 @@ The backend runs on **http://localhost:4000**.
 | POST   | `/api/games`                | —                            | Record game session             |
 | GET    | `/api/games/:userId`        | —                            | Fetch game history              |
 | GET    | `/api/professionals`        | —                            | List practitioners + volunteers |
+
+# MindLink-Thesis
 | POST   | `/api/chat`                 | —                            | Keyword-aware chatbot           |
 | POST   | `/api/support`              | JWT                          | Submit support request          |
 | GET    | `/api/practitioner/queue`   | JWT + PRACTITIONER/VOLUNTEER | Triage queue                    |
