@@ -15,10 +15,6 @@ services:
         fromDatabase:
           name: mindlink-db
           property: connectionString
-      - key: DIRECT_URL
-        fromDatabase:
-          name: mindlink-db
-          property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: OPENROUTER_API_KEY
