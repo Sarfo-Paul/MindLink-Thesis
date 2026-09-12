@@ -29,6 +29,10 @@ const openai = OPENROUTER_API_KEY
     })
   : null;
 
+if (!OPENROUTER_API_KEY) {
+  console.warn('OPENROUTER_API_KEY is not set — /api/chat/ai will return fallback responses only.');
+}
+
 function normalizeEmail(value?: string): string | null {
   if (typeof value !== 'string') return null;
   const normalized = value.trim().toLowerCase();

@@ -6,6 +6,7 @@ services:
     runtime: node
     plan: free
     region: oregon
+    branch: main
     rootDirectory: server
     buildCommand: npm install --include=dev && npx prisma db push && npm run build
     startCommand: npm start
@@ -26,11 +27,12 @@ services:
       - key: NODE_ENV
         value: production
       - key: CORS_ORIGIN
-        value: https://mindlink-thesis-1.onrender.com
+        value: https://mindlink-thesis-1.onrender.com,https://mindlink-web.onrender.com
 
   - type: web
     name: mindlink-web
     runtime: static
+    branch: main
     buildCommand: pnpm install --frozen-lockfile && pnpm build
     staticPublishPath: dist
     envVars:

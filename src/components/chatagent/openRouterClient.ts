@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { apiUrl } from '../../config/api';
+import { axiosErrorMessage } from '../../utils/axiosErrorMessage';
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -66,7 +67,8 @@ export async function generateAIResponse(
       model,
       messages,
     }, {
-      timeout: 30000,
+      // Render free tier can take ~30s to wake the API on first request
+      timeout: 90000,
     });
 
     const answer = response.data?.message || response.data?.reply;
@@ -77,12 +79,12 @@ export async function generateAIResponse(
     return answer;
   } catch (error: unknown) {
     console.error('AI proxy error:', error);
-
-    if (error instanceof Error && (error.message.includes('API key') || error.message.includes('authentication') || error.message.includes('unauthorized'))) {
-      return 'I can help with stress, mood, and everyday wellbeing check-ins. The server is rejecting the AI key, so I’m falling back to supportive guidance until the OpenRouter configuration is fixed.';
-    }
-
-    return 'I’m here to support you. Try again in a moment and I’ll help you work through what you’re feeling.';
+    throw new Error(
+      axiosErrorMessage(
+        error,
+        'Unable to reach the MindLink API. The server may be waking up — please try again in a moment.',
+      ),
+    );
   }
 }
 

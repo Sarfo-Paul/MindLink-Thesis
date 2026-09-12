@@ -8,6 +8,10 @@ interface Message {
   timestamp: Date;
 }
 
+const CHAT_STORAGE_KEY = "chatHistory_v2";
+/** Legacy arena builds stored misleading frontend key errors in localStorage */
+const STALE_ERROR_PATTERN = /VITE_OPENROUTER_API_KEY|API configuration error.*\.env file/i;
+
 export function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -19,16 +23,23 @@ export function Chat() {
   const streamingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  // Load chat history from localStorage
+  // Load chat history from localStorage (drop stale errors from old frontend builds)
   useEffect(() => {
-    const stored = localStorage.getItem("chatHistory");
-    if (stored) {
-      const parsed = JSON.parse(stored) as Array<Omit<Message, 'timestamp'> & { timestamp: string }>;
-      const messagesWithDates = parsed.map(m => ({
-        ...m,
-        timestamp: new Date(m.timestamp),
-      }));
+    localStorage.removeItem("chatHistory");
+    const stored = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!stored) return;
+
+    try {
+      const parsed = JSON.parse(stored) as Array<Omit<Message, "timestamp"> & { timestamp: string }>;
+      const messagesWithDates = parsed
+        .map((m) => ({
+          ...m,
+          timestamp: new Date(m.timestamp),
+        }))
+        .filter((m) => !STALE_ERROR_PATTERN.test(m.content));
       setMessages(messagesWithDates);
+    } catch {
+      localStorage.removeItem(CHAT_STORAGE_KEY);
     }
   }, []);
 
@@ -45,7 +56,7 @@ export function Chat() {
   // Save messages to localStorage
   useEffect(() => {
     if (messages.length > 0) {
-      localStorage.setItem("chatHistory", JSON.stringify(messages));
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
     }
   }, [messages]);
 
@@ -131,8 +142,10 @@ export function Chat() {
       
       if (error instanceof Error) {
         // Provide specific error messages based on error type
-        if (error.message.includes('API key') || error.message.includes('missing') || error.message.includes('unauthorized') || error.message.includes('authentication')) {
-          errorContent = "⚠️ AI configuration issue: the backend key may be missing or invalid. I’m still ready to help with supportive guidance while the AI connection is corrected.";
+        if (error.message.includes('Cannot reach the API') || error.message.includes('Network Error') || error.message.includes('waking up')) {
+          errorContent = "I'm having trouble reaching the MindLink server. On Render's free tier the API can take up to a minute to wake up — please wait and try again.";
+        } else if (error.message.includes('API key') || error.message.includes('missing') || error.message.includes('unauthorized') || error.message.includes('authentication')) {
+          errorContent = "The AI service on the server needs attention. Your OPENROUTER_API_KEY should be set on the mindlink-api service in Render, not on the frontend.";
         } else if (error.message.includes('Rate limit')) {
           errorContent = "I'm receiving too many requests right now. Please wait a moment and try again.";
         } else if (error.message.includes('Network') || error.message.includes('connection')) {
