@@ -172,8 +172,8 @@ Games act as **passive assessment tools**, not entertainment. Results feed direc
 # Install dependencies
 pnpm install
 
-# Set environment variable
-echo "VITE_OPENROUTER_API_KEY=your_key_here" > .env
+# Optional: point at local API (defaults to http://localhost:4000 in dev)
+# cp .env.example .env
 
 # Start dev server
 pnpm dev
@@ -188,10 +188,8 @@ cd server
 npm install
 
 # Set environment variables
-# Create server/.env with:
-# DATABASE_URL=postgresql://...
-# DIRECT_URL=postgresql://...
-# JWT_SECRET=your_secret_here
+# cp .env.example .env
+# Edit server/.env — at minimum set DATABASE_URL, JWT_SECRET, and OPENROUTER_API_KEY
 
 # Push schema to database
 npx prisma db push
@@ -215,20 +213,23 @@ To deploy:
 1. Push the repository to GitHub or GitLab.
 2. In Render, choose **New > Blueprint** and select the repository.
 3. Apply the Blueprint. Render generates `JWT_SECRET` and connects both services to the managed database.
-4. Open the `mindlink-web` URL after the deploy finishes.
+4. In Render, open **mindlink-api → Environment** and set `OPENROUTER_API_KEY` to your [OpenRouter](https://openrouter.ai/) key (the chat proxy runs on the server, not the frontend).
+5. Ensure both services deploy from the **`main`** branch (not `arena/*` — older branches require a frontend `VITE_OPENROUTER_API_KEY`).
+6. Open the `mindlink-web` URL after the deploy finishes.
 
 The API URL used by the frontend is configured in `render.yaml` as `VITE_API_BASE_URL`. Update it if the API service name or URL is changed. Render databases start empty, so run the seed script separately only when demo data is needed.
 
 ### 5. Environment Variables
 
-| Variable                  | Where           | Description                                             |
-| ------------------------- | --------------- | ------------------------------------------------------- |
-| `VITE_OPENROUTER_API_KEY` | Frontend `.env` | OpenRouter API key for AI chat                          |
-| `VITE_SERVER_API_URL`     | Frontend `.env` | Triage server base URL (default: render.com deployment) |
-| `DATABASE_URL`            | `server/.env`   | PostgreSQL connection string                            |
-| `DIRECT_URL`              | `server/.env`   | Direct PostgreSQL URL (for Prisma migrations)           |
-| `JWT_SECRET`              | `server/.env`   | JWT signing secret                                      |
-| `PORT`                    | `server/.env`   | Server port (default: 4000)                             |
+| Variable               | Where              | Description                                              |
+| ---------------------- | ------------------ | -------------------------------------------------------- |
+| `VITE_API_BASE_URL`    | Frontend `.env`    | Backend URL (default: `http://localhost:4000` in dev)      |
+| `OPENROUTER_API_KEY`   | `server/.env` / Render **mindlink-api** | OpenRouter key for AI chat (server-side proxy) |
+| `OPENROUTER_MODEL`     | `server/.env`      | Model id (default: `openai/gpt-4o-mini`)                 |
+| `DATABASE_URL`         | `server/.env`      | PostgreSQL connection string                             |
+| `JWT_SECRET`           | `server/.env`      | JWT signing secret                                       |
+| `CORS_ORIGIN`          | `server/.env`      | Allowed frontend origin(s)                               |
+| `PORT`                 | `server/.env`      | Server port (default: 4000)                              |
 
 ---
 
